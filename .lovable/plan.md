@@ -47,7 +47,9 @@ Order stays the same for screen readers and keyboard use regardless of visual po
 - `/login` — sign in with your email (magic link or password).
 - `/admin` — only your email gets in; anyone else sees "Access denied".
 - Editors for profile, skills, work experience, education, awards, certifications — add, edit, delete and reorder entries.
-- Resume upload: PDF only, max 10 MB, replaces the live download link when saved.
+- Each text field has a Professional and a Conversational version, edited side by side, with a "copy across" button when the wording is the same.
+- Resume upload: PDF only, max 10 MB, replaces the live download link when saved. Optional second upload for the conversational tone.
+- After upload, the detected country and detected first name are shown for confirmation before saving.
 - Save confirmations and clear validation messages.
 
 ## Technical notes
@@ -55,21 +57,24 @@ Order stays the same for screen readers and keyboard use regardless of visual po
 - Built on the project's TanStack Start + Tailwind v4 stack (not Next.js as the document suggests) — same capabilities, this is what this project runs on.
 - Backend: Lovable Cloud provides the database, email login and file storage.
 - Tables: `profiles`, `skill_groups`, `skills`, `experience`, `education`, `awards`, `certifications`, each with `sort_order`; plus a roles table so admin rights are checked server-side, never from the browser.
-- Public read access is limited to portfolio content; all writes and uploads require the owner account. Resume files live in a storage bucket with public read on the active file only.
+- Tone handling: text columns are duplicated per tone (`summary_professional` / `summary_conversational`, and the same pattern for role summaries and achievement bullets), plus `resume_url_professional` / `resume_url_conversational`. A single `tone` value in the page state selects which set renders.
+- Privacy: the profile stores `first_name` and `country` as the only public identity fields; no `phone` or `city` columns exist, so nothing private can leak through the public read policy. Resume parsing runs in a server function that extracts country and first name and discards the rest.
+- Public read access is limited to portfolio content; all writes and uploads require the owner account. Resume files live in a storage bucket with public read on the active files only.
 - Design tokens from the chosen direction go into `src/styles.css`: canvas `#f6f9fc`, ink `#172033`, muted `#526075`, accent `#1677c8`, soft `#dff2ff`, line `#dce6f0`, Manrope loaded via a link tag in the root route.
-- Decorative SVG flow paths are `aria-hidden`; one `h1` (your name); WCAG AA contrast.
+- Decorative SVG flow paths are `aria-hidden`; one `h1` (your first name); WCAG AA contrast.
 
 ## Build order
 
-1. Design tokens, fonts, Lovable Cloud enabled, tables + storage bucket created with seed content.
-2. Public dashboard: rail, flow line, all six sections, footer, mobile connectors.
-3. Login page, admin guard, section editors, resume upload.
+1. Design tokens, fonts, Lovable Cloud enabled, tables + storage bucket created with seed content in both tones.
+2. Public dashboard: rail, flow line, all six sections, footer, mobile connectors, tone toggle.
+3. Login page, admin guard, section editors with dual-tone fields, resume upload with country/first-name detection.
 4. Responsive and accessibility pass at 320 / 375 / 768 / 1024 / 1440.
 
 ## Still needed from you
 
-- Your real name, headline, location, contact email and LinkedIn link.
+- Your first name, headline, contact email and LinkedIn link.
 - The email address that should be the only admin login.
-- Your resume PDF and a profile photo (optional — I'll use a generated placeholder portrait until you upload one).
+- Your resume PDF (country and first name will be read from it) and a profile photo — optional; I'll use a generated placeholder portrait until you upload one.
 
 Until you send these, I'll build with clearly-marked placeholder content you can replace in the admin area.
+

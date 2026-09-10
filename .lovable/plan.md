@@ -2,7 +2,23 @@
 
 A light, calm personal portfolio site with a private admin area where you sign in and update everything yourself — no code changes needed.
 
-Design direction chosen: **Sticky editorial rail** — your name, photo, contact buttons and quick facts stay pinned on the left while the content sections flow down the right along a soft curved "water flow" line.
+Design direction chosen: **Sticky editorial rail** — your first name, photo, contact buttons and quick facts stay pinned on the left while the content sections flow down the right along a soft curved "water flow" line.
+
+## Privacy rules
+
+- No phone number anywhere on the public site, and none stored for public display.
+- No city or street-level location — country only (for example "United Kingdom").
+- The big heading shows your **first name only**, never the full name. Full name is kept privately for the resume file itself.
+- When a resume is uploaded, the country is read from the document automatically and used for the public location line; you can correct it in the admin area if it's read wrongly.
+
+## Tone switch
+
+A small toggle near the top lets a visitor switch the written copy between two tones of the same career history:
+
+- **Professional** — formal, recruiter-standard phrasing.
+- **Conversational** — warmer, plain-English phrasing.
+
+Only wording changes; the sections, dates, employers and facts stay identical. Both versions are editable in the admin area, and each tone can point at its own resume PDF if you upload one. The choice is remembered on the visitor's device, and defaults to Professional.
 
 ## What visitors see
 
@@ -23,7 +39,8 @@ Responsive behaviour:
 - Tablet: simplified flow, single readable column.
 - Mobile: one column, small curved arrow connectors between cards, 16–24px side padding.
 
-Order stays the same for screen readers and keyboard use regardless of visual position. Animations stop for anyone who prefers reduced motion.
+Order stays the same for screen readers and keyboard use regardless of visual position. Animations stop for anyone who prefers reduced motion. The tone toggle is a proper keyboard-operable switch with a clear label.
+
 
 ## What you get as the owner
 

@@ -24,6 +24,7 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -77,6 +78,32 @@ function LoginPage() {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Signing in…" : "Sign in"}
           </Button>
+          <button
+            type="button"
+            className="w-full text-center text-xs font-semibold text-muted-foreground underline-offset-2 hover:text-primary hover:underline"
+            onClick={async () => {
+              setError(null);
+              if (!email) {
+                setError("Enter your email above, then use this link.");
+                return;
+              }
+              const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: `${window.location.origin}/reset-password`,
+              });
+              if (error) {
+                setError(error.message);
+              } else {
+                setNotice("Password-reset email sent. Check your inbox.");
+              }
+            }}
+          >
+            Forgot password?
+          </button>
+          {notice && (
+            <p role="status" className="text-center text-xs font-semibold text-primary">
+              {notice}
+            </p>
+          )}
         </form>
       </div>
     </div>

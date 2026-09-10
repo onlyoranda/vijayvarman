@@ -1,13 +1,14 @@
-# Resume Portfolio Dashboard — tasks
+# Roadmap — Resume Portfolio Dashboard
 
-- [ ] Design tokens + Manrope font (styles.css, __root head)
-- [ ] Lovable Cloud schema: profiles, skill_groups, skills, experience, education, awards, certifications, user_roles + has_role
-- [ ] Storage bucket for resumes
-- [ ] Seed content (both tones)
-- [ ] Public dashboard: sticky rail, flow line, 6 sections, footer, mobile connectors
-- [ ] Tone toggle (professional/conversational), persisted
-- [ ] Section-title sway animation on scroll (reduced-motion safe)
-- [ ] /login page
-- [ ] /admin under _authenticated with admin-email check
-- [ ] Section editors + resume upload (PDF, 10MB, country/first-name detection)
-- [ ] Responsive + a11y pass, SEO head metadata
+- [x] Design tokens + fonts + title sway animation (reduced-motion safe)
+- [x] Database schema: profiles, skills, experience, education, awards, certifications, roles (RLS + grants)
+- [x] Private resume storage + admin-only policies + public download route
+- [x] Seed portfolio content (editable placeholder data)
+- [x] Public dashboard: sticky rail, first name only, country, tone toggle, sway titles, download buttons, mobile connectors, desktop flow line
+- [x] Login page + protected /admin area
+- [x] Admin editors for all sections + tone-specific resume upload
+- [x] Auto-detect first name and country from uploaded resume
+- [x] Forgot-password / reset-password flow
+- [x] Owner account created (vijayvarmanr@gmail.com) + admin role granted
+- [x] Verified: public page, tone switch, login, admin save, resume upload + download
+- [ ] Owner: sign in, set a new password, replace seeded content with real details, upload real resume(s), add photo

@@ -41,6 +41,9 @@ Responsive behaviour:
 
 Order stays the same for screen readers and keyboard use regardless of visual position. Animations stop for anyone who prefers reduced motion. The tone toggle is a proper keyboard-operable switch with a clear label.
 
+Subtle motion: each section title (Profile Summary, Skills, Work Experience, Education, Awards & Achievements, Certifications) gets a very mild, slow sway — a small one-off wobble that plays as the title scrolls into view, not a continuous shake, and fully disabled under reduced-motion settings.
+
+
 
 ## What you get as the owner
 

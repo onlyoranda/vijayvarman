@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Briefcase, Download, GraduationCap, Linkedin, Mail, MapPin, Medal, Sparkles, User, Wrench } from "lucide-react";
+import { Briefcase, GraduationCap, Linkedin, Mail, MapPin, Medal, Sparkles, User, Wrench } from "lucide-react";
 import { getPortfolio, type Portfolio } from "@/lib/portfolio.functions";
 import { ToneProvider, useTone } from "@/lib/tone";
 import { Switch } from "@/components/ui/switch";
@@ -244,13 +244,17 @@ function PortfolioView() {
                 ))}
               </dl>
             )}
-            <a
-              href={`/api/public/resume?tone=${tone}`}
-              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-            >
-              <Download className="h-4 w-4" aria-hidden="true" />
-              Download Resume
-            </a>
+            {p.linkedin_url && (
+              <a
+                href={p.linkedin_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              >
+                <Linkedin className="h-4 w-4" aria-hidden="true" />
+                View LinkedIn
+              </a>
+            )}
           </div>
         </aside>
 
@@ -295,16 +299,20 @@ function PortfolioView() {
 
             <footer className="mt-12 rounded-2xl border border-line bg-accent-soft/60 p-6 text-center sm:p-8">
               <p className="text-sm font-semibold text-foreground">
-                Want the full picture? Download the resume or get in touch.
+                Want the full picture? Connect on LinkedIn or get in touch.
               </p>
               <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-                <a
-                  href={`/api/public/resume?tone=${tone}`}
-                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90"
-                >
-                  <Download className="h-4 w-4" aria-hidden="true" />
-                  Download Resume
-                </a>
+                {p.linkedin_url && (
+                  <a
+                    href={p.linkedin_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90"
+                  >
+                    <Linkedin className="h-4 w-4" aria-hidden="true" />
+                    View LinkedIn
+                  </a>
+                )}
                 {p.email && (
                   <a
                     href={`mailto:${p.email}`}
@@ -312,17 +320,6 @@ function PortfolioView() {
                   >
                     <Mail className="h-4 w-4" aria-hidden="true" />
                     {p.email}
-                  </a>
-                )}
-                {p.linkedin_url && (
-                  <a
-                    href={p.linkedin_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl border border-line bg-card px-4 py-2.5 text-sm font-bold text-foreground hover:bg-muted"
-                  >
-                    <Linkedin className="h-4 w-4" aria-hidden="true" />
-                    LinkedIn
                   </a>
                 )}
               </div>

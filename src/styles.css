@@ -6,6 +6,7 @@
 
 @theme {
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
 }
 
 @theme inline {
@@ -32,6 +33,8 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-accent-soft: var(--accent-soft);
   --color-line: var(--line);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
@@ -55,8 +58,10 @@
 
 :root {
   --radius: 0.75rem;
-  /* Indigo Slate: cool-grey canvas, near-black ink, indigo accent */
-  --background: oklch(0.978 0.004 265); /* #f7f8fb */
+  /* Editorial Spotlight: warm paper canvas, near-black ink, indigo accent, gold highlight */
+  --background: oklch(0.979 0.005 95); /* #faf9f6 */
+  --gold: oklch(0.72 0.105 85); /* #c9a84c */
+  --gold-soft: oklch(0.945 0.03 90); /* pale gold tint */
   --foreground: oklch(0.21 0.034 265); /* #111827 */
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.21 0.034 265);
@@ -129,6 +134,28 @@
 
 @media (prefers-reduced-motion: reduce) {
   .animate-title-sway {
+    animation: none;
+  }
+}
+
+/* Typewriter caret blink */
+@keyframes caret-blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@utility animate-caret-blink {
+  animation: caret-blink 1s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-caret-blink {
     animation: none;
   }
 }

@@ -36,6 +36,48 @@ function HomePage() {
   );
 }
 
+const reducedMotion = () =>
+  typeof window !== "undefined" &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- one-off reveal on scroll ---------- */
+function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (reducedMotion()) {
+      setShown(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setShown(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.12 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      style={{ transitionDelay: `${delay}ms` }}
+      className={`transition-all duration-700 ease-out ${
+        shown ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
+      }`}
+    >
+      {children}
+    </div>
+  );
+}
+
 /* ---------- scroll-into-view sway ---------- */
 function SwayTitle({
   icon,
@@ -52,7 +94,7 @@ function SwayTitle({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (reducedMotion()) return;
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) {
@@ -70,15 +112,160 @@ function SwayTitle({
     <h2
       ref={ref}
       id={id}
-      className={`flex scroll-mt-6 items-center gap-2.5 text-lg font-extrabold tracking-tight text-foreground sm:text-xl ${
+      className={`flex scroll-mt-6 items-center gap-3 font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl ${
         swayed ? "animate-title-sway" : ""
       }`}
     >
-      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-soft text-primary">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-primary">
         {icon}
       </span>
-      {children}
+      <span>{children}</span>
+      <span
+        aria-hidden="true"
+        className="h-px min-w-8 flex-1 bg-gradient-to-r from-gold/70 to-transparent"
+      />
     </h2>
+  );
+}
+
+/* ---------- typewriter headline ---------- */
+function Typewriter({ phrases }: { phrases: string[] }) {
+  const [text, setText] = useState(phrases[0] ?? "");
+
+  useEffect(() => {
+    if (phrases.length <= 1 || reducedMotion()) return;
+    let phraseIndex = 0;
+    let charIndex = phrases[0].length;
+    let deleting = true;
+    let timer: number;
+
+    const tick = () => {
+      if (deleting) {
+        charIndex -= 1;
+        setText(phrases[phraseIndex].slice(0, Math.max(0, charIndex)));
+        if (charIndex <= 0) {
+          deleting = false;
+          phraseIndex = (phraseIndex + 1) % phrases.length;
+          timer = window.setTimeout(tick, 350);
+          return;
+        }
+        timer = window.setTimeout(tick, 30);
+      } else {
+        charIndex += 1;
+        setText(phrases[phraseIndex].slice(0, charIndex));
+        if (charIndex >= phrases[phraseIndex].length) {
+          deleting = true;
+          timer = window.setTimeout(tick, 2400);
+          return;
+        }
+        timer = window.setTimeout(tick, 55);
+      }
+    };
+
+    timer = window.setTimeout(tick, 2600);
+    return () => window.clearTimeout(timer);
+  }, [phrases]);
+
+  return (
+    <span>
+      {text}
+      <span
+        aria-hidden="true"
+        className="ml-0.5 inline-block h-4 w-0.5 animate-caret-blink bg-gold align-middle"
+      />
+    </span>
+  );
+}
+
+/* ---------- animated stats band ---------- */
+function useCountUp(target: number, active: boolean) {
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    if (!active) return;
+    if (reducedMotion()) {
+      setValue(target);
+      return;
+    }
+    const duration = 1400;
+    const start = performance.now();
+    let raf = 0;
+    const step = (now: number) => {
+      const p = Math.min(1, (now - start) / duration);
+      setValue(Math.round(target * (1 - Math.pow(1 - p, 3))));
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [active, target]);
+
+  return value;
+}
+
+function Stat({ target, label, active }: { target: number; label: string; active: boolean }) {
+  const value = useCountUp(target, active);
+  return (
+    <div className="text-center">
+      <p className="font-display text-3xl font-semibold text-foreground sm:text-4xl">
+        {value}
+        <span className="text-gold">+</span>
+      </p>
+      <p className="mt-1 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+        {label}
+      </p>
+    </div>
+  );
+}
+
+function StatsBand({ data }: { data: Portfolio }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (reducedMotion()) {
+      setActive(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setActive(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.4 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const earliest = data.experience
+    .map((j) => j.start_date)
+    .filter((d): d is string => Boolean(d))
+    .sort()[0];
+  const years = earliest
+    ? Math.max(1, Math.floor((Date.now() - new Date(earliest).getTime()) / (365.25 * 24 * 3600 * 1000)))
+    : 0;
+
+  const stats: { target: number; label: string }[] = [];
+  if (years > 0) stats.push({ target: years, label: "Years Experience" });
+  if (data.experience.length > 0) stats.push({ target: data.experience.length, label: "Roles Held" });
+  if (data.certifications.length > 0)
+    stats.push({ target: data.certifications.length, label: "Certifications" });
+  if (data.awards.length > 0) stats.push({ target: data.awards.length, label: "Awards" });
+  if (stats.length === 0) return null;
+
+  return (
+    <div
+      ref={ref}
+      className="grid grid-cols-2 gap-4 rounded-2xl border border-gold/40 bg-gold-soft p-5 shadow-sm sm:grid-cols-4 sm:p-6"
+    >
+      {stats.map((s) => (
+        <Stat key={s.label} target={s.target} label={s.label} active={active} />
+      ))}
+    </div>
   );
 }
 
@@ -115,7 +302,9 @@ function MobileConnector({ first }: { first?: boolean }) {
 
 function SectionCard({ children }: { children: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-line bg-card p-5 shadow-sm sm:p-7">{children}</div>
+    <div className="rounded-2xl border border-line bg-card p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md sm:p-7">
+      {children}
+    </div>
   );
 }
 
@@ -181,30 +370,42 @@ function PortfolioView() {
 
   const hasAnyAwards = data.awards.length > 0;
 
+  const headlinePhrases = [
+    ...(p.headline ? [p.headline] : []),
+    "Financial Services Professional",
+    "Claims, KYC & Customer Operations",
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-8 sm:px-6 sm:py-12 md:grid-cols-[320px_minmax(0,1fr)] md:gap-12 lg:px-10">
         {/* ------- sticky editorial rail ------- */}
         <aside className="md:sticky md:top-10 md:self-start">
           <div className="rounded-2xl border border-line bg-card p-6 shadow-sm">
-            {p.profile_photo_url ? (
-              <img
-                src={p.profile_photo_url}
-                alt={`Profile photo of ${p.first_name}`}
-                className="h-20 w-20 rounded-full border border-line object-cover"
-              />
-            ) : (
-              <div
-                aria-hidden="true"
-                className="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-3xl font-extrabold text-primary-foreground"
-              >
-                {p.first_name.charAt(0)}
-              </div>
-            )}
-            <h1 className="mt-4 text-2xl font-extrabold tracking-tight text-foreground">
+            <div className="inline-block rounded-full ring-2 ring-gold/50 ring-offset-4 ring-offset-card shadow-[0_0_45px_-8px_var(--color-primary)]">
+              {p.profile_photo_url ? (
+                <img
+                  src={p.profile_photo_url}
+                  alt={`Profile photo of ${p.first_name}`}
+                  className="h-20 w-20 rounded-full object-cover"
+                />
+              ) : (
+                <div
+                  aria-hidden="true"
+                  className="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-3xl font-extrabold text-primary-foreground"
+                >
+                  {p.first_name.charAt(0)}
+                </div>
+              )}
+            </div>
+            <h1 className="mt-4 font-display text-3xl font-semibold tracking-tight text-foreground">
               {p.first_name}
             </h1>
-            {p.headline && <p className="mt-1 text-sm font-semibold text-primary">{p.headline}</p>}
+            {headlinePhrases.length > 0 && (
+              <p className="mt-1 min-h-6 text-sm font-semibold text-primary">
+                <Typewriter phrases={headlinePhrases} />
+              </p>
+            )}
             <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
               {p.country && (
                 <li className="flex items-center gap-2">
@@ -267,10 +468,15 @@ function PortfolioView() {
               <SwayTitle id="profile-summary" icon={<User className="h-4 w-4" aria-hidden="true" />}>
                 Profile Summary
               </SwayTitle>
-              <div className="mt-4">
-                <SectionCard>
-                  <p className="leading-relaxed text-foreground/90">{summary}</p>
-                </SectionCard>
+              <div className="mt-4 space-y-4">
+                <Reveal>
+                  <SectionCard>
+                    <p className="leading-relaxed text-foreground/90">{summary}</p>
+                  </SectionCard>
+                </Reveal>
+                <Reveal delay={120}>
+                  <StatsBand data={data} />
+                </Reveal>
               </div>
             </section>
 
@@ -336,6 +542,15 @@ function PortfolioView() {
   );
 }
 
+/* Varied chip sizes give the skills card a constellation feel */
+const CONSTELLATION_SIZES = [
+  "px-4 py-1.5 text-sm",
+  "px-3 py-1 text-xs",
+  "px-5 py-2 text-base font-extrabold",
+  "px-3 py-1 text-xs",
+  "px-4 py-1.5 text-sm",
+];
+
 function SkillsSection({ groups }: { groups: Portfolio["skillGroups"] }) {
   return (
     <section aria-labelledby="skills" className="scroll-mt-6">
@@ -343,22 +558,29 @@ function SkillsSection({ groups }: { groups: Portfolio["skillGroups"] }) {
         Skills
       </SwayTitle>
       <div className="mt-4">
-        <SectionCard>
-          <div className="grid gap-5 sm:grid-cols-2">
-            {groups.map((g) => (
-              <div key={g.id}>
-                <h3 className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground">
-                  {g.name}
-                </h3>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {g.skills.map((s) => (
-                    <Chip key={s.id}>{s.name}</Chip>
-                  ))}
+        <Reveal>
+          <SectionCard>
+            <div className="grid gap-6 sm:grid-cols-2">
+              {groups.map((g) => (
+                <div key={g.id} className="group/skill">
+                  <h3 className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground transition-colors group-hover/skill:text-primary">
+                    {g.name}
+                  </h3>
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    {g.skills.map((s, i) => (
+                      <span
+                        key={s.id}
+                        className={`inline-flex items-center rounded-full bg-accent-soft font-semibold text-primary transition-all duration-300 group-hover/skill:-translate-y-0.5 group-hover/skill:shadow-sm ${CONSTELLATION_SIZES[i % CONSTELLATION_SIZES.length]}`}
+                      >
+                        {s.name}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </SectionCard>
+              ))}
+            </div>
+          </SectionCard>
+        </Reveal>
       </div>
     </section>
   );
@@ -377,39 +599,41 @@ function ExperienceSection({
         Work Experience
       </SwayTitle>
       <div className="mt-4 space-y-4">
-        {rows.map((job) => {
+        {rows.map((job, i) => {
           const summary = tone === "professional" ? job.summary_professional : job.summary_conversational;
           const achievements =
             tone === "professional" ? job.achievements_professional : job.achievements_conversational;
           return (
-            <SectionCard key={job.id}>
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h3 className="text-base font-extrabold text-foreground">{job.job_title}</h3>
-                <p className="text-xs font-bold text-primary">
-                  {formatRange(job.start_date, job.end_date, job.is_current)}
-                </p>
-              </div>
-              <p className="mt-0.5 text-sm font-semibold text-muted-foreground">
-                {job.company}
-                {job.country ? ` · ${job.country}` : ""}
-                {job.employment_type ? ` · ${job.employment_type}` : ""}
-              </p>
-              {summary && <p className="mt-3 text-sm leading-relaxed text-foreground/90">{summary}</p>}
-              {achievements.length > 0 && (
-                <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm text-foreground/90">
-                  {achievements.map((a, i) => (
-                    <li key={i}>{a}</li>
-                  ))}
-                </ul>
-              )}
-              {job.skills.length > 0 && (
-                <div className="mt-4 flex flex-wrap gap-1.5">
-                  {job.skills.map((s) => (
-                    <Chip key={s}>{s}</Chip>
-                  ))}
+            <Reveal key={job.id} delay={Math.min(i, 3) * 100}>
+              <SectionCard>
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <h3 className="text-base font-extrabold text-foreground">{job.job_title}</h3>
+                  <p className="text-xs font-bold text-primary">
+                    {formatRange(job.start_date, job.end_date, job.is_current)}
+                  </p>
                 </div>
-              )}
-            </SectionCard>
+                <p className="mt-0.5 text-sm font-semibold text-muted-foreground">
+                  {job.company}
+                  {job.country ? ` · ${job.country}` : ""}
+                  {job.employment_type ? ` · ${job.employment_type}` : ""}
+                </p>
+                {summary && <p className="mt-3 text-sm leading-relaxed text-foreground/90">{summary}</p>}
+                {achievements.length > 0 && (
+                  <ul className="mt-3 list-disc space-y-1.5 pl-5 text-sm text-foreground/90">
+                    {achievements.map((a, idx) => (
+                      <li key={idx}>{a}</li>
+                    ))}
+                  </ul>
+                )}
+                {job.skills.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {job.skills.map((s) => (
+                      <Chip key={s}>{s}</Chip>
+                    ))}
+                  </div>
+                )}
+              </SectionCard>
+            </Reveal>
           );
         })}
       </div>
@@ -430,23 +654,25 @@ function EducationSection({
         Education
       </SwayTitle>
       <div className="mt-4 space-y-4">
-        {rows.map((ed) => {
+        {rows.map((ed, i) => {
           const desc =
             tone === "professional" ? ed.description_professional : ed.description_conversational;
           return (
-            <SectionCard key={ed.id}>
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h3 className="text-base font-extrabold text-foreground">{ed.qualification}</h3>
-                <p className="text-xs font-bold text-primary">
-                  {formatRange(ed.start_date, ed.end_date)}
+            <Reveal key={ed.id} delay={Math.min(i, 3) * 100}>
+              <SectionCard>
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <h3 className="text-base font-extrabold text-foreground">{ed.qualification}</h3>
+                  <p className="text-xs font-bold text-primary">
+                    {formatRange(ed.start_date, ed.end_date)}
+                  </p>
+                </div>
+                <p className="mt-0.5 text-sm font-semibold text-muted-foreground">
+                  {ed.institution}
+                  {ed.specialisation ? ` · ${ed.specialisation}` : ""}
                 </p>
-              </div>
-              <p className="mt-0.5 text-sm font-semibold text-muted-foreground">
-                {ed.institution}
-                {ed.specialisation ? ` · ${ed.specialisation}` : ""}
-              </p>
-              {desc && <p className="mt-3 text-sm leading-relaxed text-foreground/90">{desc}</p>}
-            </SectionCard>
+                {desc && <p className="mt-3 text-sm leading-relaxed text-foreground/90">{desc}</p>}
+              </SectionCard>
+            </Reveal>
           );
         })}
       </div>
@@ -467,37 +693,39 @@ function AwardsSection({
         Awards &amp; Achievements
       </SwayTitle>
       <div className="mt-4 space-y-4">
-        {rows.map((a) => {
+        {rows.map((a, i) => {
           const desc =
             tone === "professional" ? a.description_professional : a.description_conversational;
           return (
-            <SectionCard key={a.id}>
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h3 className="text-base font-extrabold text-foreground">{a.title}</h3>
-                {a.date_awarded && (
-                  <p className="text-xs font-bold text-primary">
-                    {new Date(a.date_awarded).toLocaleDateString("en-GB", {
-                      month: "short",
-                      year: "numeric",
-                    })}
-                  </p>
+            <Reveal key={a.id} delay={Math.min(i, 3) * 100}>
+              <SectionCard>
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <h3 className="text-base font-extrabold text-foreground">{a.title}</h3>
+                  {a.date_awarded && (
+                    <p className="text-xs font-bold text-primary">
+                      {new Date(a.date_awarded).toLocaleDateString("en-GB", {
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </p>
+                  )}
+                </div>
+                {a.issuer && (
+                  <p className="mt-0.5 text-sm font-semibold text-muted-foreground">{a.issuer}</p>
                 )}
-              </div>
-              {a.issuer && (
-                <p className="mt-0.5 text-sm font-semibold text-muted-foreground">{a.issuer}</p>
-              )}
-              {desc && <p className="mt-3 text-sm leading-relaxed text-foreground/90">{desc}</p>}
-              {a.url && (
-                <a
-                  href={a.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="story-link mt-2 inline-block text-sm font-semibold text-primary"
-                >
-                  Learn more
-                </a>
-              )}
-            </SectionCard>
+                {desc && <p className="mt-3 text-sm leading-relaxed text-foreground/90">{desc}</p>}
+                {a.url && (
+                  <a
+                    href={a.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="story-link mt-2 inline-block text-sm font-semibold text-primary"
+                  >
+                    Learn more
+                  </a>
+                )}
+              </SectionCard>
+            </Reveal>
           );
         })}
       </div>
@@ -512,41 +740,43 @@ function CertificationsSection({ rows }: { rows: Portfolio["certifications"] }) 
         Certifications
       </SwayTitle>
       <div className="mt-4">
-        <SectionCard>
-          <ul className="divide-y divide-line">
-            {rows.map((c) => (
-              <li key={c.id} className="flex flex-wrap items-baseline justify-between gap-2 py-3 first:pt-0 last:pb-0">
-                <div>
-                  <p className="text-sm font-extrabold text-foreground">{c.title}</p>
-                  <p className="text-xs font-semibold text-muted-foreground">{c.issuer}</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  {c.issue_date && (
-                    <p className="text-xs font-bold text-primary">
-                      {new Date(c.issue_date).toLocaleDateString("en-GB", {
-                        month: "short",
-                        year: "numeric",
-                      })}
-                      {c.expiry_date
-                        ? ` — ${new Date(c.expiry_date).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}`
-                        : ""}
-                    </p>
-                  )}
-                  {c.verification_url && (
-                    <a
-                      href={c.verification_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="story-link text-xs font-bold text-primary"
-                    >
-                      Verify
-                    </a>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </SectionCard>
+        <Reveal>
+          <SectionCard>
+            <ul className="divide-y divide-line">
+              {rows.map((c) => (
+                <li key={c.id} className="flex flex-wrap items-baseline justify-between gap-2 py-3 first:pt-0 last:pb-0">
+                  <div>
+                    <p className="text-sm font-extrabold text-foreground">{c.title}</p>
+                    <p className="text-xs font-semibold text-muted-foreground">{c.issuer}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {c.issue_date && (
+                      <p className="text-xs font-bold text-primary">
+                        {new Date(c.issue_date).toLocaleDateString("en-GB", {
+                          month: "short",
+                          year: "numeric",
+                        })}
+                        {c.expiry_date
+                          ? ` — ${new Date(c.expiry_date).toLocaleDateString("en-GB", { month: "short", year: "numeric" })}`
+                          : ""}
+                      </p>
+                    )}
+                    {c.verification_url && (
+                      <a
+                        href={c.verification_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="story-link text-xs font-bold text-primary"
+                      >
+                        Verify
+                      </a>
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </SectionCard>
+        </Reveal>
       </div>
     </section>
   );

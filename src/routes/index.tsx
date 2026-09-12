@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Briefcase, GraduationCap, Linkedin, Mail, MapPin, Medal, Sparkles, User, Wrench } from "lucide-react";
+import { Briefcase, GraduationCap, Linkedin, Lock, Mail, MapPin, Medal, Sparkles, User, Wrench } from "lucide-react";
 import { getPortfolio, type Portfolio } from "@/lib/portfolio.functions";
 import { ToneProvider, useTone } from "@/lib/tone";
 import { Switch } from "@/components/ui/switch";
@@ -533,6 +533,15 @@ function PortfolioView() {
                 {p.first_name}
                 {p.country ? ` · ${p.country}` : ""}
               </p>
+              <div className="mt-4 border-t border-line/70 pt-3">
+                <Link
+                  to="/login"
+                  className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground/70 transition-colors hover:text-muted-foreground"
+                >
+                  <Lock className="h-3 w-3" aria-hidden="true" />
+                  Owner sign-in
+                </Link>
+              </div>
             </footer>
           </div>
         </main>

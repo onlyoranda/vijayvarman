@@ -43,6 +43,23 @@ const profileSchema = z.object({
   quick_facts: z.array(z.object({ label: z.string().max(60), value: z.string().max(120) })).max(12),
 });
 
+// Email is not readable via the public/authenticated table grants, so the
+// admin panel fetches it through the privileged client after a role check.
+export const getProfileEmail = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const ctx = context as AdminContext;
+    await requireAdmin(ctx);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("profiles")
+      .select("email")
+      .limit(1)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return { email: (data?.email as string | null) ?? null };
+  });
+
 export const updateProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => profileSchema.parse(data))

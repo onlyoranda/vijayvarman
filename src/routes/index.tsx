@@ -135,14 +135,15 @@ function Typewriter({ phrases }: { phrases: string[] }) {
   useEffect(() => {
     if (phrases.length <= 1 || reducedMotion()) return;
     let phraseIndex = 0;
-    let charIndex = phrases[0].length;
+    let charIndex = (phrases[0] ?? "").length;
     let deleting = true;
     let timer: number;
 
     const tick = () => {
+      const current = phrases[phraseIndex] ?? "";
       if (deleting) {
         charIndex -= 1;
-        setText(phrases[phraseIndex].slice(0, Math.max(0, charIndex)));
+        setText(current.slice(0, Math.max(0, charIndex)));
         if (charIndex <= 0) {
           deleting = false;
           phraseIndex = (phraseIndex + 1) % phrases.length;
@@ -152,8 +153,8 @@ function Typewriter({ phrases }: { phrases: string[] }) {
         timer = window.setTimeout(tick, 30);
       } else {
         charIndex += 1;
-        setText(phrases[phraseIndex].slice(0, charIndex));
-        if (charIndex >= phrases[phraseIndex].length) {
+        setText(current.slice(0, charIndex));
+        if (charIndex >= current.length) {
           deleting = true;
           timer = window.setTimeout(tick, 2400);
           return;

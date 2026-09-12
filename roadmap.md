@@ -12,3 +12,5 @@
 - [x] Owner account created (vijayvarmanr@gmail.com) + admin role granted
 - [x] Verified: public page, tone switch, login, admin save, resume upload + download
 - [ ] Owner: sign in, set a new password, replace seeded content with real details, upload real resume(s), add photo
+- [x] Editorial Spotlight redesign: serif titles, gold stats band, typewriter headline, reveal animations
+- [x] Discreet "Owner sign-in" link in page footer

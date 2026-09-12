@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getPortfolio } from "@/lib/portfolio.functions";
 import {
   checkIsAdmin,
+  getProfileEmail,
   updateProfile,
   saveSkills,
   saveExperience,

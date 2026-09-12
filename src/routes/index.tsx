@@ -414,14 +414,6 @@ function PortfolioView() {
                   {p.country}
                 </li>
               )}
-              {p.email && (
-                <li className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  <a href={`mailto:${p.email}`} className="story-link break-all text-foreground">
-                    {p.email}
-                  </a>
-                </li>
-              )}
               {p.linkedin_url && (
                 <li className="flex items-center gap-2">
                   <Linkedin className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -518,15 +510,6 @@ function PortfolioView() {
                   >
                     <Linkedin className="h-4 w-4" aria-hidden="true" />
                     View LinkedIn
-                  </a>
-                )}
-                {p.email && (
-                  <a
-                    href={`mailto:${p.email}`}
-                    className="inline-flex items-center gap-2 rounded-xl border border-line bg-card px-4 py-2.5 text-sm font-bold text-foreground hover:bg-muted"
-                  >
-                    <Mail className="h-4 w-4" aria-hidden="true" />
-                    {p.email}
                   </a>
                 )}
               </div>

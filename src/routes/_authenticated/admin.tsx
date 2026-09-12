@@ -172,13 +172,19 @@ function ProfileEditor({
     first_name: p.first_name,
     headline: p.headline ?? "",
     country: p.country ?? "",
-    email: p.email ?? "",
+    email: "",
     linkedin_url: p.linkedin_url ?? "",
     summary_professional: p.summary_professional ?? "",
     summary_conversational: p.summary_conversational ?? "",
     quick_facts: p.quick_facts,
   });
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    getProfileEmail()
+      .then((r) => setForm((f) => ({ ...f, email: r.email ?? "" })))
+      .catch(() => {});
+  }, []);
 
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
 

@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Briefcase, GraduationCap, Linkedin, Lock, Mail, MapPin, Medal, Sparkles, User, Wrench } from "lucide-react";
+import { Briefcase, GraduationCap, Linkedin, Lock, MapPin, Medal, Sparkles, User, Wrench } from "lucide-react";
 import { getPortfolio, type Portfolio } from "@/lib/portfolio.functions";
 import { ToneProvider, useTone } from "@/lib/tone";
 import { Switch } from "@/components/ui/switch";

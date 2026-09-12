@@ -7,23 +7,28 @@ type AdminContext = {
   userId: string;
 };
 
-async function requireAdmin(context: AdminContext) {
-  const { data, error } = await context.supabase.rpc("has_role", {
-    _user_id: context.userId,
-    _role: "admin",
-  });
+async function isAdmin(supabase: AdminContext["supabase"], userId: string) {
+  const { data, error } = await supabase
+    .from("user_roles")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("role", "admin")
+    .maybeSingle();
   if (error) throw new Error(error.message);
-  if (!data) throw new Error("Forbidden: this account is not the portfolio owner");
+  return Boolean(data);
+}
+
+async function requireAdmin(context: AdminContext) {
+  if (!(await isAdmin(context.supabase, context.userId))) {
+    throw new Error("Forbidden: this account is not the portfolio owner");
+  }
 }
 
 export const checkIsAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data } = await (context as AdminContext).supabase.rpc("has_role", {
-      _user_id: (context as AdminContext).userId,
-      _role: "admin",
-    });
-    return { isAdmin: Boolean(data) };
+    const ctx = context as AdminContext;
+    return { isAdmin: await isAdmin(ctx.supabase, ctx.userId) };
   });
 
 const profileSchema = z.object({

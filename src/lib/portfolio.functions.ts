@@ -88,7 +88,7 @@ export const getPortfolio = createServerFn({ method: "GET" }).handler(
     const { data: profile, error } = await supabase
       .from("profiles")
       .select(
-        "id, first_name, headline, country, email, linkedin_url, profile_photo_url, summary_professional, summary_conversational, quick_facts, resume_url_professional, resume_url_conversational",
+        "id, first_name, headline, country, linkedin_url, profile_photo_url, summary_professional, summary_conversational, quick_facts, resume_url_professional, resume_url_conversational",
       )
       .limit(1)
       .maybeSingle();

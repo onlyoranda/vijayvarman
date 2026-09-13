@@ -383,7 +383,7 @@ function PortfolioView() {
         {/* ------- sticky editorial rail ------- */}
         <aside className="md:sticky md:top-10 md:self-start">
           <div className="rounded-2xl border border-line bg-card p-6 shadow-sm">
-            <div className="inline-block rounded-full ring-2 ring-gold/50 ring-offset-4 ring-offset-card shadow-[0_0_45px_-8px_var(--color-primary)]">
+            <div className="inline-block rounded-full ring-2 ring-gold/60 ring-offset-4 ring-offset-card">
               {p.profile_photo_url ? (
                 <img
                   src={p.profile_photo_url}
@@ -421,7 +421,7 @@ function PortfolioView() {
                     href={p.linkedin_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="story-link text-foreground"
+                    className="text-foreground underline decoration-gold/60 underline-offset-4 transition-colors hover:text-primary hover:decoration-gold"
                   >
                     LinkedIn profile
                   </a>
@@ -712,7 +712,7 @@ function AwardsSection({
                     href={a.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="story-link mt-2 inline-block text-sm font-semibold text-primary"
+                    className="mt-2 inline-block text-sm font-semibold text-primary underline decoration-gold/50 underline-offset-4 transition-colors hover:text-secondary hover:decoration-gold"
                   >
                     Learn more
                   </a>
@@ -759,7 +759,7 @@ function CertificationsSection({ rows }: { rows: Portfolio["certifications"] }) 
                         href={c.verification_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="story-link text-xs font-bold text-primary"
+                        className="text-xs font-bold text-primary underline decoration-gold/50 underline-offset-4 transition-colors hover:text-secondary hover:decoration-gold"
                       >
                         Verify
                       </a>

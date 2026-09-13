@@ -1,3 +1,5 @@
+# Show multiple options of templates for example one example is given below show two more options 
+
 # Executive Navy + Gold Visual Redesign
 
 Re-skin the portfolio with a premium private-banking aesthetic. No changes to content, sections, layout structure, navigation, buttons, or functionality — colours, typography, and surface treatment only.
@@ -47,3 +49,5 @@ Replace the current indigo accent across all design tokens:
 ## Technical notes
 
 - All work is token edits in `src/styles.css` plus class-name swaps in `src/routes/index.tsx` (indigo utilities → navy/gold tokens) and the font link in `src/routes/__root.tsx`. Token work was started in a previous session (palette tokens and Inter font token already updated); remaining work is the font link, leftover indigo/glow references, and verification. No schema, server-function, or route changes.
+
+The website interface shows animations and lines in desktop but not in mobile needs to be rechecked and update

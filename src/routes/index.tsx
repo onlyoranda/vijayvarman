@@ -295,8 +295,9 @@ function FlowLine() {
 function MobileConnector({ first }: { first?: boolean }) {
   if (first) return null;
   return (
-    <div aria-hidden="true" className="ml-5 flex h-10 items-start md:hidden">
-      <div className="h-full w-px border-l-2 border-dashed border-primary/30" />
+    <div aria-hidden="true" className="ml-6 flex h-12 items-stretch md:hidden">
+      <div className="w-0.5 rounded-full bg-gradient-to-b from-primary/40 via-gold/50 to-primary/40" />
+      <div className="-ml-[5px] mt-4 h-2.5 w-2.5 shrink-0 rounded-full border-2 border-gold/70 bg-card" />
     </div>
   );
 }

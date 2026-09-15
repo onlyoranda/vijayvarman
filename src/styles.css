@@ -95,6 +95,8 @@
   --sidebar-accent-foreground: oklch(0.267 0.032 255);
   --sidebar-border: oklch(0.928 0.006 255);
   --sidebar-ring: oklch(0.305 0.056 254);
+  --cursor-ink: oklch(0.16 0.01 255 / 0.78);
+  --cursor-text: oklch(0.99 0.003 265);
 }
 
 @layer base {
@@ -106,6 +108,49 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
+}
+
+@media (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .magnifying-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid color-mix(in oklch, var(--cursor-text) 45%, transparent);
+    border-radius: 9999px;
+    background: var(--cursor-ink);
+    color: var(--cursor-text);
+    box-shadow: 0 4px 16px color-mix(in oklch, var(--foreground) 18%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition: width 180ms ease, height 180ms ease, opacity 220ms ease, background 180ms ease;
+    will-change: transform, width, height;
+  }
+
+  .magnifying-cursor[data-visible="true"] { opacity: 0.62; }
+  .magnifying-cursor[data-magnifying="true"] {
+    width: 6rem;
+    height: 6rem;
+    opacity: 0.96;
+  }
+  .magnifying-cursor span {
+    max-width: 5.25rem;
+    overflow: hidden;
+    font-family: var(--font-sans);
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  body { cursor: none; }
+  a, button, input, textarea, select, label { cursor: none; }
 }
 
 /* Gentle one-off sway for section titles as they scroll into view */

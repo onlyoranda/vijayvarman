@@ -15,6 +15,7 @@ const COUNTRIES = [
 export interface ResumeDetection {
   firstName: string | null;
   country: string | null;
+  text: string;
 }
 
 export async function detectFromResume(file: File): Promise<ResumeDetection> {
@@ -48,8 +49,8 @@ export async function detectFromResume(file: File): Promise<ResumeDetection> {
         break;
       }
     }
-    return { firstName, country };
+    return { firstName, country, text: cleaned };
   } catch {
-    return { firstName: null, country: null };
+    return { firstName: null, country: null, text: "" };
   }
 }

@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { ImageUp, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getPortfolio } from "@/lib/portfolio.functions";
 import {
@@ -15,8 +15,10 @@ import {
   saveAwards,
   saveCertifications,
   setResumePath,
+  setProfilePhotoPath,
 } from "@/lib/admin.functions";
 import { detectFromResume } from "@/lib/resume-detect";
+import { importResumeContent } from "@/lib/resume-import.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -190,7 +192,14 @@ function ProfileEditor({
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   return (
-    <form
+    <div className="space-y-4">
+      <ProfilePhotoUpload
+        profileId={p.id}
+        currentPath={p.profile_photo_url}
+        firstName={p.first_name}
+        onSaved={onSaved}
+      />
+      <form
       className="space-y-4 rounded-2xl border border-line bg-card p-6"
       onSubmit={async (e) => {
         e.preventDefault();
@@ -313,7 +322,97 @@ function ProfileEditor({
       <Button type="submit" disabled={saving}>
         {saving ? "Saving…" : "Save profile"}
       </Button>
-    </form>
+      </form>
+    </div>
+  );
+}
+
+function ProfilePhotoUpload({
+  profileId,
+  currentPath,
+  firstName,
+  onSaved,
+}: {
+  profileId: string;
+  currentPath: string | null;
+  firstName: string;
+  onSaved: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [preview, setPreview] = useState<string | null>(
+    currentPath ? `/api/public/profile-photo?v=${encodeURIComponent(currentPath)}` : null,
+  );
+
+  useEffect(() => () => {
+    if (preview?.startsWith("blob:")) URL.revokeObjectURL(preview);
+  }, [preview]);
+
+  const onFile = async (file: File) => {
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Choose a JPG, PNG or WebP image");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Photo must be under 5 MB");
+      return;
+    }
+
+    const localPreview = URL.createObjectURL(file);
+    setPreview(localPreview);
+    setBusy(true);
+    try {
+      const path = "profile-photo";
+      const { error } = await supabase.storage.from("profile-photos").upload(path, file, {
+        upsert: true,
+        contentType: file.type,
+        cacheControl: "3600",
+      });
+      if (error) throw new Error(error.message);
+      await setProfilePhotoPath({ data: { profileId, path } });
+      setPreview(`/api/public/profile-photo?v=${Date.now()}`);
+      toast.success("Profile photo updated");
+      onSaved();
+    } catch (err) {
+      setPreview(currentPath ? `/api/public/profile-photo?v=${encodeURIComponent(currentPath)}` : null);
+      toast.error(err instanceof Error ? err.message : "Photo upload failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="rounded-2xl border border-line bg-card p-6" aria-labelledby="profile-photo-title">
+      <div className="flex flex-wrap items-center gap-5">
+        {preview ? (
+          <img src={preview} alt={`Profile preview for ${firstName}`} className="h-24 w-24 rounded-full object-cover ring-2 ring-gold/60 ring-offset-4 ring-offset-card" />
+        ) : (
+          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-primary text-3xl font-bold text-primary-foreground ring-2 ring-gold/60 ring-offset-4 ring-offset-card" aria-hidden="true">
+            {firstName.charAt(0)}
+          </div>
+        )}
+        <div className="min-w-0 flex-1">
+          <h2 id="profile-photo-title" className="text-sm font-extrabold text-foreground">Profile photo</h2>
+          <p className="mt-1 text-xs text-muted-foreground">JPG, PNG or WebP, up to 5 MB.</p>
+          <Label className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+            <ImageUp className="h-4 w-4" aria-hidden="true" />
+            {busy ? "Uploading…" : currentPath ? "Replace photo" : "Upload photo"}
+            <Input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              disabled={busy}
+              className="sr-only"
+              aria-label="Upload profile photo"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) void onFile(file);
+                e.target.value = "";
+              }}
+            />
+          </Label>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -793,19 +892,27 @@ function ResumeUpload({
       if (upErr) throw new Error(upErr.message);
       await setResumePath({ data: { profileId, tone, path } });
 
-      const detected = await detectFromResume(file);
-      const bits: string[] = [];
-      if (detected.firstName) bits.push(`first name “${detected.firstName}”`);
-      if (detected.country) bits.push(`country “${detected.country}”`);
-      toast.success(
-        bits.length > 0
-          ? `Resume uploaded. Detected ${bits.join(" and ")} — check the Profile tab if you'd like to use these.`
-          : "Resume uploaded. Couldn't auto-detect name or country — set them in the Profile tab.",
-        { duration: 8000 },
-      );
+      if (tone === "professional") {
+        toast.loading("Importing your resume and creating both tones…", { id: "resume-import" });
+        const detected = await detectFromResume(file);
+        if (!detected.text.trim()) throw new Error("The PDF has no readable text.");
+        const imported = await importResumeContent({ data: { profileId, text: detected.text } });
+        const filled = Object.values(imported.counts).reduce((total, count) => total + count, 0);
+        toast.success(`Resume imported. ${filled} items filled across the page.`, {
+          id: "resume-import",
+          duration: 8000,
+        });
+      } else {
+        toast.success("Conversational resume uploaded");
+      }
       onSaved();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Upload failed");
+      toast.error(
+        tone === "professional"
+          ? `PDF uploaded, but page content was not changed: ${err instanceof Error ? err.message : "import failed"}`
+          : err instanceof Error ? err.message : "Upload failed",
+        { id: tone === "professional" ? "resume-import" : undefined, duration: 9000 },
+      );
     } finally {
       setBusy(false);
     }

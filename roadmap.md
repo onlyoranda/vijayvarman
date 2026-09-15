@@ -17,3 +17,4 @@
 - [ ] Connect resume PDF upload to automatic AI profile population and conversational copy generation
 - [ ] Standardize skills typography and spacing across the public profile
 - [ ] Add owner-only profile photo upload and public profile display
+- [ ] Add a circular fading pointer with text magnification on precise-pointer devices

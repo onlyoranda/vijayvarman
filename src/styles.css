@@ -149,8 +149,13 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  body { cursor: none; }
-  a, button, input, textarea, select, label { cursor: none; }
+  body.has-magnifying-cursor,
+  body.has-magnifying-cursor a,
+  body.has-magnifying-cursor button,
+  body.has-magnifying-cursor input,
+  body.has-magnifying-cursor textarea,
+  body.has-magnifying-cursor select,
+  body.has-magnifying-cursor label { cursor: none; }
 }
 
 /* Gentle one-off sway for section titles as they scroll into view */

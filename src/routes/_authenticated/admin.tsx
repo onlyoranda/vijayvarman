@@ -907,12 +907,14 @@ function ResumeUpload({
       }
       onSaved();
     } catch (err) {
-      toast.error(
-        tone === "professional"
-          ? `PDF uploaded, but page content was not changed: ${err instanceof Error ? err.message : "import failed"}`
-          : err instanceof Error ? err.message : "Upload failed",
-        { id: tone === "professional" ? "resume-import" : undefined, duration: 9000 },
-      );
+      const message = tone === "professional"
+        ? `PDF uploaded, but page content was not changed: ${err instanceof Error ? err.message : "import failed"}`
+        : err instanceof Error ? err.message : "Upload failed";
+      if (tone === "professional") {
+        toast.error(message, { id: "resume-import", duration: 9000 });
+      } else {
+        toast.error(message, { duration: 9000 });
+      }
     } finally {
       setBusy(false);
     }

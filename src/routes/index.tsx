@@ -48,10 +48,14 @@ function MagnifyingCursor() {
     if (!lens || !word) return;
 
     let frame = 0;
+    document.body.classList.add("has-magnifying-cursor");
     const readWord = (event: PointerEvent) => {
       const caret = document.caretPositionFromPoint?.(event.clientX, event.clientY);
-      const text = caret?.offsetNode.textContent ?? "";
-      const offset = caret?.offset ?? 0;
+      const fallback = document.caretRangeFromPoint?.(event.clientX, event.clientY);
+      const node = caret?.offsetNode ?? fallback?.startContainer;
+      if (!node || node.nodeType !== Node.TEXT_NODE) return "";
+      const text = node.textContent ?? "";
+      const offset = caret?.offset ?? fallback?.startOffset ?? 0;
       const left = text.slice(0, offset).match(/[\p{L}\p{N}'’&/+.-]+$/u)?.[0] ?? "";
       const right = text.slice(offset).match(/^[\p{L}\p{N}'’&/+.-]+/u)?.[0] ?? "";
       return `${left}${right}`.slice(0, 28);
@@ -62,15 +66,16 @@ function MagnifyingCursor() {
         lens.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0) translate(-50%, -50%)`;
         const text = readWord(event);
         word.textContent = text;
-        lens.dataset.magnifying = text ? "true" : "false";
-        lens.dataset.visible = "true";
+        lens.dataset["magnifying"] = text ? "true" : "false";
+        lens.dataset["visible"] = "true";
       });
     };
-    const leave = () => { lens.dataset.visible = "false"; };
+    const leave = () => { lens.dataset["visible"] = "false"; };
     window.addEventListener("pointermove", move, { passive: true });
     document.documentElement.addEventListener("mouseleave", leave);
     return () => {
       cancelAnimationFrame(frame);
+      document.body.classList.remove("has-magnifying-cursor");
       window.removeEventListener("pointermove", move);
       document.documentElement.removeEventListener("mouseleave", leave);
     };

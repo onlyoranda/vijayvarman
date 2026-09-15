@@ -176,3 +176,22 @@ export const setResumePath = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+const profilePhotoPathSchema = z.object({
+  profileId: z.string().uuid(),
+  path: z.string().min(1).max(300),
+});
+
+export const setProfilePhotoPath = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => profilePhotoPathSchema.parse(data))
+  .handler(async ({ data, context }) => {
+    const ctx = context as AdminContext;
+    await requireAdmin(ctx);
+    const { error } = await ctx.supabase
+      .from("profiles")
+      .update({ profile_photo_url: data.path })
+      .eq("id", data.profileId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

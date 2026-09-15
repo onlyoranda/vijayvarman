@@ -14,6 +14,7 @@
 - [ ] Owner: sign in, set a new password, replace seeded content with real details, upload real resume(s), add photo
 - [x] Editorial Spotlight redesign: serif titles, gold stats band, typewriter headline, reveal animations
 - [x] Discreet "Owner sign-in" link in page footer
-- [ ] Connect resume PDF upload to automatic AI profile population and conversational copy generation
-- [ ] Standardize skills typography and spacing across the public profile
-- [ ] Add owner-only profile photo upload and public profile display
+- [x] Connect resume PDF upload to automatic AI profile population and conversational copy generation
+- [x] Standardize skills typography and spacing across the public profile
+- [x] Add owner-only profile photo upload and public profile display
+- [x] Add a circular fading pointer with text magnification on precise-pointer devices

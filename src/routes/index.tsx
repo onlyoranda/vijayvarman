@@ -32,7 +32,59 @@ function HomePage() {
   return (
     <ToneProvider>
       <PortfolioView />
+      <MagnifyingCursor />
     </ToneProvider>
+  );
+}
+
+function MagnifyingCursor() {
+  const lensRef = useRef<HTMLDivElement>(null);
+  const wordRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    if (!window.matchMedia("(pointer: fine)").matches || reducedMotion()) return;
+    const lens = lensRef.current;
+    const word = wordRef.current;
+    if (!lens || !word) return;
+
+    let frame = 0;
+    document.body.classList.add("has-magnifying-cursor");
+    const readWord = (event: PointerEvent) => {
+      const caret = document.caretPositionFromPoint?.(event.clientX, event.clientY);
+      const fallback = document.caretRangeFromPoint?.(event.clientX, event.clientY);
+      const node = caret?.offsetNode ?? fallback?.startContainer;
+      if (!node || node.nodeType !== Node.TEXT_NODE) return "";
+      const text = node.textContent ?? "";
+      const offset = caret?.offset ?? fallback?.startOffset ?? 0;
+      const left = text.slice(0, offset).match(/[\p{L}\p{N}'’&/+.-]+$/u)?.[0] ?? "";
+      const right = text.slice(offset).match(/^[\p{L}\p{N}'’&/+.-]+/u)?.[0] ?? "";
+      return `${left}${right}`.slice(0, 28);
+    };
+    const move = (event: PointerEvent) => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        lens.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0) translate(-50%, -50%)`;
+        const text = readWord(event);
+        word.textContent = text;
+        lens.dataset["magnifying"] = text ? "true" : "false";
+        lens.dataset["visible"] = "true";
+      });
+    };
+    const leave = () => { lens.dataset["visible"] = "false"; };
+    window.addEventListener("pointermove", move, { passive: true });
+    document.documentElement.addEventListener("mouseleave", leave);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.body.classList.remove("has-magnifying-cursor");
+      window.removeEventListener("pointermove", move);
+      document.documentElement.removeEventListener("mouseleave", leave);
+    };
+  }, []);
+
+  return (
+    <div ref={lensRef} className="magnifying-cursor" data-visible="false" data-magnifying="false" aria-hidden="true">
+      <span ref={wordRef} />
+    </div>
   );
 }
 
@@ -387,7 +439,7 @@ function PortfolioView() {
             <div className="inline-block rounded-full ring-2 ring-gold/60 ring-offset-4 ring-offset-card">
               {p.profile_photo_url ? (
                 <img
-                  src={p.profile_photo_url}
+                  src={`/api/public/profile-photo?v=${encodeURIComponent(p.profile_photo_url)}`}
                   alt={`Profile photo of ${p.first_name}`}
                   className="h-20 w-20 rounded-full object-cover"
                 />
@@ -536,15 +588,6 @@ function PortfolioView() {
   );
 }
 
-/* Varied chip sizes give the skills card a constellation feel */
-const CONSTELLATION_SIZES = [
-  "px-4 py-1.5 text-sm",
-  "px-3 py-1 text-xs",
-  "px-5 py-2 text-base font-extrabold",
-  "px-3 py-1 text-xs",
-  "px-4 py-1.5 text-sm",
-];
-
 function SkillsSection({ groups }: { groups: Portfolio["skillGroups"] }) {
   return (
     <section aria-labelledby="skills" className="scroll-mt-6">
@@ -561,10 +604,10 @@ function SkillsSection({ groups }: { groups: Portfolio["skillGroups"] }) {
                     {g.name}
                   </h3>
                   <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                    {g.skills.map((s, i) => (
+                    {g.skills.map((s) => (
                       <span
                         key={s.id}
-                        className={`inline-flex items-center rounded-full bg-accent-soft font-semibold text-primary transition-all duration-300 group-hover/skill:-translate-y-0.5 group-hover/skill:shadow-sm ${CONSTELLATION_SIZES[i % CONSTELLATION_SIZES.length]}`}
+                        className="inline-flex min-h-8 items-center rounded-full bg-accent-soft px-4 py-1.5 text-sm font-semibold text-primary transition-all duration-300 group-hover/skill:-translate-y-0.5 group-hover/skill:shadow-sm"
                       >
                         {s.name}
                       </span>

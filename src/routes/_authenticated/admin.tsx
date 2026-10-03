@@ -105,7 +105,7 @@ function AdminPage() {
               Portfolio admin
             </h1>
             <p className="text-sm text-muted-foreground">
-              Edit each section, then press its Save button. Both tone versions live side by side.
+              Upload your résumé to populate the page automatically, or edit each section manually.
             </p>
           </div>
           <Button
@@ -178,7 +178,6 @@ function ProfileEditor({
     email: "",
     linkedin_url: p.linkedin_url ?? "",
     summary_professional: p.summary_professional ?? "",
-    summary_conversational: p.summary_conversational ?? "",
     quick_facts: p.quick_facts,
   });
   const [saving, setSaving] = useState(false);
@@ -214,7 +213,7 @@ function ProfileEditor({
               email: form.email || null,
               linkedin_url: form.linkedin_url || null,
               summary_professional: form.summary_professional || null,
-              summary_conversational: form.summary_conversational || null,
+              summary_conversational: form.summary_professional || null,
               quick_facts: form.quick_facts,
             },
           });
@@ -249,11 +248,8 @@ function ProfileEditor({
           />
         </Field>
       </div>
-      <Field label="Summary — professional tone">
+      <Field label="Profile summary">
         <Textarea rows={4} value={form.summary_professional} onChange={(e) => set("summary_professional", e.target.value)} />
-      </Field>
-      <Field label="Summary — conversational tone">
-        <Textarea rows={4} value={form.summary_conversational} onChange={(e) => set("summary_conversational", e.target.value)} />
       </Field>
       <div>
         <Label className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
@@ -536,17 +532,15 @@ interface ExpForm {
   end_date: string;
   is_current: boolean;
   summary_professional: string;
-  summary_conversational: string;
   achievements_professional: string;
-  achievements_conversational: string;
   skills: string;
 }
 
 function ExperienceEditor({ data, onSaved }: { data: PortfolioData; onSaved: () => void }) {
   const empty: ExpForm = {
     company: "", job_title: "", country: "", employment_type: "", start_date: "",
-    end_date: "", is_current: false, summary_professional: "", summary_conversational: "",
-    achievements_professional: "", achievements_conversational: "", skills: "",
+    end_date: "", is_current: false, summary_professional: "",
+    achievements_professional: "", skills: "",
   };
   const [rows, setRows] = useState<ExpForm[]>(
     data.experience.map((x) => ({
@@ -554,9 +548,7 @@ function ExperienceEditor({ data, onSaved }: { data: PortfolioData; onSaved: () 
       employment_type: x.employment_type ?? "", start_date: x.start_date ?? "",
       end_date: x.end_date ?? "", is_current: x.is_current,
       summary_professional: x.summary_professional ?? "",
-      summary_conversational: x.summary_conversational ?? "",
       achievements_professional: x.achievements_professional.join("\n"),
-      achievements_conversational: x.achievements_conversational.join("\n"),
       skills: x.skills.join("\n"),
     })),
   );
@@ -580,9 +572,9 @@ function ExperienceEditor({ data, onSaved }: { data: PortfolioData; onSaved: () 
                 start_date: r.start_date || null, end_date: r.is_current ? null : r.end_date || null,
                 is_current: r.is_current,
                 summary_professional: r.summary_professional || null,
-                summary_conversational: r.summary_conversational || null,
+                summary_conversational: r.summary_professional || null,
                 achievements_professional: r.achievements_professional.split("\n").map((s) => s.trim()).filter(Boolean),
-                achievements_conversational: r.achievements_conversational.split("\n").map((s) => s.trim()).filter(Boolean),
+                achievements_conversational: r.achievements_professional.split("\n").map((s) => s.trim()).filter(Boolean),
                 skills: r.skills.split("\n").map((s) => s.trim()).filter(Boolean),
               })),
             },
@@ -612,10 +604,8 @@ function ExperienceEditor({ data, onSaved }: { data: PortfolioData; onSaved: () 
             <input type="checkbox" checked={r.is_current} onChange={(e) => set(i, "is_current", e.target.checked)} className="h-4 w-4 rounded border-input accent-primary" />
             Current role
           </label>
-          <Field label="Summary — professional"><Textarea rows={2} value={r.summary_professional} onChange={(e) => set(i, "summary_professional", e.target.value)} /></Field>
-          <Field label="Summary — conversational"><Textarea rows={2} value={r.summary_conversational} onChange={(e) => set(i, "summary_conversational", e.target.value)} /></Field>
-          <Field label="Achievements — professional (one per line)"><Textarea rows={3} value={r.achievements_professional} onChange={(e) => set(i, "achievements_professional", e.target.value)} /></Field>
-          <Field label="Achievements — conversational (one per line)"><Textarea rows={3} value={r.achievements_conversational} onChange={(e) => set(i, "achievements_conversational", e.target.value)} /></Field>
+          <Field label="Summary"><Textarea rows={2} value={r.summary_professional} onChange={(e) => set(i, "summary_professional", e.target.value)} /></Field>
+          <Field label="Achievements (one per line)"><Textarea rows={3} value={r.achievements_professional} onChange={(e) => set(i, "achievements_professional", e.target.value)} /></Field>
           <Field label="Skill tags (one per line)"><Textarea rows={2} value={r.skills} onChange={(e) => set(i, "skills", e.target.value)} /></Field>
         </RowShell>
       ))}
@@ -633,20 +623,19 @@ function ExperienceEditor({ data, onSaved }: { data: PortfolioData; onSaved: () 
 interface EduForm {
   institution: string; qualification: string; specialisation: string;
   start_date: string; end_date: string;
-  description_professional: string; description_conversational: string;
+  description_professional: string;
 }
 
 function EducationEditor({ data, onSaved }: { data: PortfolioData; onSaved: () => void }) {
   const empty: EduForm = {
     institution: "", qualification: "", specialisation: "", start_date: "",
-    end_date: "", description_professional: "", description_conversational: "",
+    end_date: "", description_professional: "",
   };
   const [rows, setRows] = useState<EduForm[]>(
     data.education.map((x) => ({
       institution: x.institution, qualification: x.qualification, specialisation: x.specialisation ?? "",
       start_date: x.start_date ?? "", end_date: x.end_date ?? "",
       description_professional: x.description_professional ?? "",
-      description_conversational: x.description_conversational ?? "",
     })),
   );
   const [saving, setSaving] = useState(false);
@@ -668,7 +657,7 @@ function EducationEditor({ data, onSaved }: { data: PortfolioData; onSaved: () =
                 specialisation: r.specialisation.trim() || null,
                 start_date: r.start_date || null, end_date: r.end_date || null,
                 description_professional: r.description_professional || null,
-                description_conversational: r.description_conversational || null,
+                description_conversational: r.description_professional || null,
               })),
             },
           });
@@ -690,8 +679,7 @@ function EducationEditor({ data, onSaved }: { data: PortfolioData; onSaved: () =
             <Field label="Start date"><Input type="date" value={r.start_date} onChange={(e) => set(i, "start_date", e.target.value)} /></Field>
             <Field label="End date"><Input type="date" value={r.end_date} onChange={(e) => set(i, "end_date", e.target.value)} /></Field>
           </div>
-          <Field label="Description — professional"><Textarea rows={2} value={r.description_professional} onChange={(e) => set(i, "description_professional", e.target.value)} /></Field>
-          <Field label="Description — conversational"><Textarea rows={2} value={r.description_conversational} onChange={(e) => set(i, "description_conversational", e.target.value)} /></Field>
+          <Field label="Description"><Textarea rows={2} value={r.description_professional} onChange={(e) => set(i, "description_professional", e.target.value)} /></Field>
         </RowShell>
       ))}
       <div className="flex gap-2">
@@ -707,19 +695,18 @@ function EducationEditor({ data, onSaved }: { data: PortfolioData; onSaved: () =
 /* ---------------- Awards ---------------- */
 interface AwardForm {
   title: string; issuer: string; date_awarded: string; url: string;
-  description_professional: string; description_conversational: string;
+  description_professional: string;
 }
 
 function AwardsEditor({ data, onSaved }: { data: PortfolioData; onSaved: () => void }) {
   const empty: AwardForm = {
     title: "", issuer: "", date_awarded: "", url: "",
-    description_professional: "", description_conversational: "",
+    description_professional: "",
   };
   const [rows, setRows] = useState<AwardForm[]>(
     data.awards.map((x) => ({
       title: x.title, issuer: x.issuer ?? "", date_awarded: x.date_awarded ?? "", url: x.url ?? "",
       description_professional: x.description_professional ?? "",
-      description_conversational: x.description_conversational ?? "",
     })),
   );
   const [saving, setSaving] = useState(false);
@@ -740,7 +727,7 @@ function AwardsEditor({ data, onSaved }: { data: PortfolioData; onSaved: () => v
                 title: r.title.trim(), issuer: r.issuer.trim() || null,
                 date_awarded: r.date_awarded || null, url: r.url.trim() || null,
                 description_professional: r.description_professional || null,
-                description_conversational: r.description_conversational || null,
+                description_conversational: r.description_professional || null,
               })),
             },
           });
@@ -761,8 +748,7 @@ function AwardsEditor({ data, onSaved }: { data: PortfolioData; onSaved: () => v
             <Field label="Date awarded"><Input type="date" value={r.date_awarded} onChange={(e) => set(i, "date_awarded", e.target.value)} /></Field>
             <Field label="Link (optional)"><Input type="url" value={r.url} onChange={(e) => set(i, "url", e.target.value)} /></Field>
           </div>
-          <Field label="Description — professional"><Textarea rows={2} value={r.description_professional} onChange={(e) => set(i, "description_professional", e.target.value)} /></Field>
-          <Field label="Description — conversational"><Textarea rows={2} value={r.description_conversational} onChange={(e) => set(i, "description_conversational", e.target.value)} /></Field>
+          <Field label="Description"><Textarea rows={2} value={r.description_professional} onChange={(e) => set(i, "description_professional", e.target.value)} /></Field>
         </RowShell>
       ))}
       <div className="flex gap-2">
@@ -849,24 +835,20 @@ function CertificationsEditor({ data, onSaved }: { data: PortfolioData; onSaved:
 function ResumeEditor({ data, onSaved }: { data: PortfolioData; onSaved: () => void }) {
   return (
     <div className="space-y-4">
-      <ResumeUpload tone="professional" profileId={data.profile.id} currentPath={data.profile.resume_url_professional} onSaved={onSaved} />
-      <ResumeUpload tone="conversational" profileId={data.profile.id} currentPath={data.profile.resume_url_conversational} onSaved={onSaved} />
+      <ResumeUpload profileId={data.profile.id} currentPath={data.profile.resume_url_professional} onSaved={onSaved} />
       <p className="text-xs text-muted-foreground">
-        If a tone has no resume uploaded, visitors downloading in that tone get the other one.
-        Phone numbers and city details in the PDF itself are never shown on this site — the
-        public page displays only your first name and country.
+        Uploading replaces the page content with professionally structured résumé information.
+        Phone numbers, email addresses, full names, and city details are never displayed publicly.
       </p>
     </div>
   );
 }
 
 function ResumeUpload({
-  tone,
   profileId,
   currentPath,
   onSaved,
 }: {
-  tone: "professional" | "conversational";
   profileId: string;
   currentPath: string | null;
   onSaved: () => void;
@@ -884,37 +866,27 @@ function ResumeUpload({
     }
     setBusy(true);
     try {
-      const path = `resume-${tone}.pdf`;
+      const path = "resume-professional.pdf";
       const { error: upErr } = await supabase.storage.from("resumes").upload(path, file, {
         upsert: true,
         contentType: "application/pdf",
       });
       if (upErr) throw new Error(upErr.message);
-      await setResumePath({ data: { profileId, tone, path } });
+      await setResumePath({ data: { profileId, tone: "professional", path } });
 
-      if (tone === "professional") {
-        toast.loading("Importing your resume and creating both tones…", { id: "resume-import" });
-        const detected = await detectFromResume(file);
-        if (!detected.text.trim()) throw new Error("The PDF has no readable text.");
-        const imported = await importResumeContent({ data: { profileId, text: detected.text } });
-        const filled = Object.values(imported.counts).reduce((total, count) => total + count, 0);
-        toast.success(`Resume imported. ${filled} items filled across the page.`, {
-          id: "resume-import",
-          duration: 8000,
-        });
-      } else {
-        toast.success("Conversational resume uploaded");
-      }
+      toast.loading("Importing your résumé and updating the page…", { id: "resume-import" });
+      const detected = await detectFromResume(file);
+      if (!detected.text.trim()) throw new Error("The PDF has no readable text.");
+      const imported = await importResumeContent({ data: { profileId, text: detected.text } });
+      const filled = Object.values(imported.counts).reduce((total, count) => total + count, 0);
+      toast.success(`Résumé imported. ${filled} items filled across the page.`, {
+        id: "resume-import",
+        duration: 8000,
+      });
       onSaved();
     } catch (err) {
-      const message = tone === "professional"
-        ? `PDF uploaded, but page content was not changed: ${err instanceof Error ? err.message : "import failed"}`
-        : err instanceof Error ? err.message : "Upload failed";
-      if (tone === "professional") {
-        toast.error(message, { id: "resume-import", duration: 9000 });
-      } else {
-        toast.error(message, { duration: 9000 });
-      }
+      const message = `PDF uploaded, but page content was not changed: ${err instanceof Error ? err.message : "import failed"}`;
+      toast.error(message, { id: "resume-import", duration: 9000 });
     } finally {
       setBusy(false);
     }
@@ -922,9 +894,9 @@ function ResumeUpload({
 
   return (
     <div className="rounded-2xl border border-line bg-card p-6">
-      <h3 className="text-sm font-extrabold capitalize text-foreground">{tone} resume</h3>
+      <h3 className="text-sm font-extrabold text-foreground">Résumé upload</h3>
       <p className="mt-1 text-xs text-muted-foreground">
-        {currentPath ? "A resume is currently uploaded for this tone." : "No resume uploaded for this tone yet."}{" "}
+        {currentPath ? "A résumé is currently uploaded." : "No résumé uploaded yet."}{" "}
         PDF only, up to 10 MB.
       </p>
       <div className="mt-3">
@@ -932,7 +904,7 @@ function ResumeUpload({
           type="file"
           accept="application/pdf"
           disabled={busy}
-          aria-label={`Upload ${tone} resume PDF`}
+          aria-label="Upload résumé PDF"
           onChange={(e) => {
             const f = e.target.files?.[0];
             if (f) void onFile(f);

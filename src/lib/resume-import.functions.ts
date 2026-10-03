@@ -25,7 +25,6 @@ const parsedSchema = z.object({
   headline: z.string().nullable().optional(),
   country: z.string().nullable().optional(),
   summary_professional: z.string().nullable().optional(),
-  summary_conversational: z.string().nullable().optional(),
   quick_facts: z
     .array(z.object({ label: z.string(), value: z.string() }))
     .optional()
@@ -45,9 +44,7 @@ const parsedSchema = z.object({
         end_date: z.string().nullable().optional(),
         is_current: z.boolean().optional().default(false),
         summary_professional: z.string().nullable().optional(),
-        summary_conversational: z.string().nullable().optional(),
-        achievements_professional: z.array(z.string()).optional().default([]),
-        achievements_conversational: z.array(z.string()).optional().default([]),
+              achievements_professional: z.array(z.string()).optional().default([]),
         skills: z.array(z.string()).optional().default([]),
       }),
     )
@@ -62,7 +59,6 @@ const parsedSchema = z.object({
         start_date: z.string().nullable().optional(),
         end_date: z.string().nullable().optional(),
         description_professional: z.string().nullable().optional(),
-        description_conversational: z.string().nullable().optional(),
       }),
     )
     .optional()
@@ -74,7 +70,6 @@ const parsedSchema = z.object({
         issuer: z.string().nullable().optional(),
         date_awarded: z.string().nullable().optional(),
         description_professional: z.string().nullable().optional(),
-        description_conversational: z.string().nullable().optional(),
       }),
     )
     .optional()
@@ -101,8 +96,8 @@ Rules:
 - PRIVACY: never include phone numbers, street addresses, city/town names, postcodes or email addresses anywhere in the output. Location is ONLY the country name (e.g. "United Kingdom").
 - first_name: the person's first name only.
 - headline: a short senior-level professional title (max 100 chars).
-- Write EVERY text field twice: "*_professional" in formal third-person-free executive tone, and "*_conversational" as the same facts told warmly in first person ("I led...", plain language, friendly but credible). Never leave a conversational field empty when a professional one exists.
-- summary_professional / summary_conversational: 3-5 sentences each.
+- Write all summary, description, and achievement fields in a concise professional tone using only facts supported by the resume.
+- summary_professional: 3-5 sentences.
 - quick_facts: up to 4 short label/value pairs (e.g. "Experience" / "12+ years"). No contact details.
 - Dates use "YYYY-MM-DD" (use the 1st of the month when only month/year is known) or null.
 - skill_groups: 3-6 themed groups with concise skill names.
@@ -175,8 +170,8 @@ export const importResumeContent = createServerFn({ method: "POST" })
     if (parsed.headline) profileUpdate["headline"] = parsed.headline.slice(0, 200);
     if (parsed.country) profileUpdate["country"] = parsed.country.slice(0, 80);
     if (parsed.summary_professional) profileUpdate["summary_professional"] = parsed.summary_professional.slice(0, 4000);
-    if (parsed.summary_conversational)
-      profileUpdate["summary_conversational"] = parsed.summary_conversational.slice(0, 4000);
+    if (parsed.summary_professional)
+      profileUpdate["summary_conversational"] = parsed.summary_professional.slice(0, 4000);
     if (parsed.quick_facts.length > 0) profileUpdate["quick_facts"] = parsed.quick_facts.slice(0, 6);
 
     if (Object.keys(profileUpdate).length > 0) {
@@ -206,10 +201,9 @@ export const importResumeContent = createServerFn({ method: "POST" })
         end_date: e.end_date ?? null,
         is_current: e.is_current ?? false,
         summary_professional: e.summary_professional ?? null,
-        summary_conversational: e.summary_conversational ?? e.summary_professional ?? null,
+        summary_conversational: e.summary_professional ?? null,
         achievements_professional: e.achievements_professional,
-        achievements_conversational:
-          e.achievements_conversational.length > 0 ? e.achievements_conversational : e.achievements_professional,
+        achievements_conversational: e.achievements_professional,
         skills: e.skills,
       })),
     );
@@ -223,7 +217,7 @@ export const importResumeContent = createServerFn({ method: "POST" })
         start_date: e.start_date ?? null,
         end_date: e.end_date ?? null,
         description_professional: e.description_professional ?? null,
-        description_conversational: e.description_conversational ?? e.description_professional ?? null,
+        description_conversational: e.description_professional ?? null,
       })),
     );
 
@@ -234,7 +228,7 @@ export const importResumeContent = createServerFn({ method: "POST" })
         issuer: a.issuer ?? null,
         date_awarded: a.date_awarded ?? null,
         description_professional: a.description_professional ?? null,
-        description_conversational: a.description_conversational ?? a.description_professional ?? null,
+        description_conversational: a.description_professional ?? null,
       })),
     );
 

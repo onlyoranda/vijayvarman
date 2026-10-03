@@ -3,8 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Briefcase, GraduationCap, Linkedin, Lock, MapPin, Medal, Sparkles, User, Wrench } from "lucide-react";
 import { getPortfolio, type Portfolio } from "@/lib/portfolio.functions";
-import { ToneProvider, useTone } from "@/lib/tone";
-import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -30,62 +28,42 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   return (
-    <ToneProvider>
+    <>
       <PortfolioView />
-      <MagnifyingCursor />
-    </ToneProvider>
+      <CircleCursor />
+    </>
   );
 }
 
-function MagnifyingCursor() {
-  const lensRef = useRef<HTMLDivElement>(null);
-  const wordRef = useRef<HTMLSpanElement>(null);
+function CircleCursor() {
+  const circleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!window.matchMedia("(pointer: fine)").matches || reducedMotion()) return;
-    const lens = lensRef.current;
-    const word = wordRef.current;
-    if (!lens || !word) return;
+    const circle = circleRef.current;
+    if (!circle) return;
 
     let frame = 0;
-    document.body.classList.add("has-magnifying-cursor");
-    const readWord = (event: PointerEvent) => {
-      const caret = document.caretPositionFromPoint?.(event.clientX, event.clientY);
-      const fallback = document.caretRangeFromPoint?.(event.clientX, event.clientY);
-      const node = caret?.offsetNode ?? fallback?.startContainer;
-      if (!node || node.nodeType !== Node.TEXT_NODE) return "";
-      const text = node.textContent ?? "";
-      const offset = caret?.offset ?? fallback?.startOffset ?? 0;
-      const left = text.slice(0, offset).match(/[\p{L}\p{N}'’&/+.-]+$/u)?.[0] ?? "";
-      const right = text.slice(offset).match(/^[\p{L}\p{N}'’&/+.-]+/u)?.[0] ?? "";
-      return `${left}${right}`.slice(0, 28);
-    };
+    document.body.classList.add("has-circle-cursor");
     const move = (event: PointerEvent) => {
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
-        lens.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0) translate(-50%, -50%)`;
-        const text = readWord(event);
-        word.textContent = text;
-        lens.dataset["magnifying"] = text ? "true" : "false";
-        lens.dataset["visible"] = "true";
+        circle.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0) translate(-50%, -50%)`;
+        circle.dataset["visible"] = "true";
       });
     };
-    const leave = () => { lens.dataset["visible"] = "false"; };
+    const leave = () => { circle.dataset["visible"] = "false"; };
     window.addEventListener("pointermove", move, { passive: true });
     document.documentElement.addEventListener("mouseleave", leave);
     return () => {
       cancelAnimationFrame(frame);
-      document.body.classList.remove("has-magnifying-cursor");
+      document.body.classList.remove("has-circle-cursor");
       window.removeEventListener("pointermove", move);
       document.documentElement.removeEventListener("mouseleave", leave);
     };
   }, []);
 
-  return (
-    <div ref={lensRef} className="magnifying-cursor" data-visible="false" data-magnifying="false" aria-hidden="true">
-      <span ref={wordRef} />
-    </div>
-  );
+  return <div ref={circleRef} className="circle-cursor" data-visible="false" aria-hidden="true" />;
 }
 
 const reducedMotion = () =>
@@ -104,6 +82,10 @@ function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: number }
       setShown(true);
       return;
     }
+    if (!("IntersectionObserver" in window)) {
+      setShown(true);
+      return;
+    }
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) {
@@ -111,7 +93,7 @@ function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: number }
           observer.disconnect();
         }
       },
-      { threshold: 0.12 },
+      { threshold: 0.05, rootMargin: "0px 0px 8% 0px" },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -147,6 +129,10 @@ function SwayTitle({
     const el = ref.current;
     if (!el) return;
     if (reducedMotion()) return;
+    if (!("IntersectionObserver" in window)) {
+      setSwayed(true);
+      return;
+    }
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) {
@@ -154,7 +140,7 @@ function SwayTitle({
           observer.disconnect();
         }
       },
-      { threshold: 0.6 },
+      { threshold: 0.2, rootMargin: "0px 0px -5% 0px" },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -281,6 +267,10 @@ function StatsBand({ data }: { data: Portfolio }) {
       setActive(true);
       return;
     }
+    if (!("IntersectionObserver" in window)) {
+      setActive(true);
+      return;
+    }
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) {
@@ -288,7 +278,7 @@ function StatsBand({ data }: { data: Portfolio }) {
           observer.disconnect();
         }
       },
-      { threshold: 0.4 },
+      { threshold: 0.15 },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -349,7 +339,7 @@ function MobileConnector({ first }: { first?: boolean }) {
   return (
     <div aria-hidden="true" className="ml-6 flex h-12 items-stretch md:hidden">
       <div className="w-0.5 rounded-full bg-gradient-to-b from-primary/40 via-gold/50 to-primary/40" />
-      <div className="-ml-[5px] mt-4 h-2.5 w-2.5 shrink-0 rounded-full border-2 border-gold/70 bg-card" />
+      <div className="-ml-[5px] mt-2 h-2.5 w-2.5 shrink-0 animate-connector-flow rounded-full border-2 border-gold/70 bg-card" />
     </div>
   );
 }
@@ -379,38 +369,9 @@ function formatRange(start: string | null, end: string | null, current?: boolean
   return s ?? e ?? "";
 }
 
-/* ---------- tone toggle ---------- */
-function ToneToggle() {
-  const { tone, setTone } = useTone();
-  const conversational = tone === "conversational";
-  return (
-    <div className="fixed bottom-5 right-5 z-50">
-      <div className="flex items-center gap-3 rounded-full border border-line bg-card px-4 py-2.5 shadow-lg">
-        <span
-          className={`text-xs font-bold ${!conversational ? "text-primary" : "text-muted-foreground"}`}
-        >
-          Professional
-        </span>
-        <Switch
-          checked={conversational}
-          onCheckedChange={(checked) => setTone(checked ? "conversational" : "professional")}
-          aria-label="Switch between professional and conversational resume tone"
-        />
-        <span
-          className={`text-xs font-bold ${conversational ? "text-primary" : "text-muted-foreground"}`}
-        >
-          Conversational
-        </span>
-      </div>
-    </div>
-  );
-}
-
 /* ---------- main view ---------- */
 function PortfolioView() {
   const { data } = useQuery({ queryKey: ["portfolio"], queryFn: () => getPortfolio() });
-  const { tone } = useTone();
-
   if (!data) {
     return (
       <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
@@ -420,7 +381,7 @@ function PortfolioView() {
   }
 
   const p = data.profile;
-  const summary = tone === "professional" ? p.summary_professional : p.summary_conversational;
+  const summary = p.summary_professional;
 
   const hasAnyAwards = data.awards.length > 0;
 
@@ -530,15 +491,15 @@ function PortfolioView() {
             <SkillsSection groups={data.skillGroups} />
 
             <MobileConnector />
-            <ExperienceSection rows={data.experience} tone={tone} />
+            <ExperienceSection rows={data.experience} />
 
             <MobileConnector />
-            <EducationSection rows={data.education} tone={tone} />
+            <EducationSection rows={data.education} />
 
             {hasAnyAwards && (
               <>
                 <MobileConnector />
-                <AwardsSection rows={data.awards} tone={tone} />
+                <AwardsSection rows={data.awards} />
               </>
             )}
 
@@ -583,7 +544,6 @@ function PortfolioView() {
           </div>
         </main>
       </div>
-      <ToneToggle />
     </div>
   );
 }
@@ -623,13 +583,7 @@ function SkillsSection({ groups }: { groups: Portfolio["skillGroups"] }) {
   );
 }
 
-function ExperienceSection({
-  rows,
-  tone,
-}: {
-  rows: Portfolio["experience"];
-  tone: "professional" | "conversational";
-}) {
+function ExperienceSection({ rows }: { rows: Portfolio["experience"] }) {
   return (
     <section aria-labelledby="work-experience" className="scroll-mt-6">
       <SwayTitle id="work-experience" icon={<Briefcase className="h-4 w-4" aria-hidden="true" />}>
@@ -637,9 +591,8 @@ function ExperienceSection({
       </SwayTitle>
       <div className="mt-4 space-y-4">
         {rows.map((job, i) => {
-          const summary = tone === "professional" ? job.summary_professional : job.summary_conversational;
-          const achievements =
-            tone === "professional" ? job.achievements_professional : job.achievements_conversational;
+          const summary = job.summary_professional;
+          const achievements = job.achievements_professional;
           return (
             <Reveal key={job.id} delay={Math.min(i, 3) * 100}>
               <SectionCard>
@@ -678,13 +631,7 @@ function ExperienceSection({
   );
 }
 
-function EducationSection({
-  rows,
-  tone,
-}: {
-  rows: Portfolio["education"];
-  tone: "professional" | "conversational";
-}) {
+function EducationSection({ rows }: { rows: Portfolio["education"] }) {
   return (
     <section aria-labelledby="education" className="scroll-mt-6">
       <SwayTitle id="education" icon={<GraduationCap className="h-4 w-4" aria-hidden="true" />}>
@@ -692,8 +639,7 @@ function EducationSection({
       </SwayTitle>
       <div className="mt-4 space-y-4">
         {rows.map((ed, i) => {
-          const desc =
-            tone === "professional" ? ed.description_professional : ed.description_conversational;
+          const desc = ed.description_professional;
           return (
             <Reveal key={ed.id} delay={Math.min(i, 3) * 100}>
               <SectionCard>
@@ -717,13 +663,7 @@ function EducationSection({
   );
 }
 
-function AwardsSection({
-  rows,
-  tone,
-}: {
-  rows: Portfolio["awards"];
-  tone: "professional" | "conversational";
-}) {
+function AwardsSection({ rows }: { rows: Portfolio["awards"] }) {
   return (
     <section aria-labelledby="awards" className="scroll-mt-6">
       <SwayTitle id="awards" icon={<Medal className="h-4 w-4" aria-hidden="true" />}>
@@ -731,8 +671,7 @@ function AwardsSection({
       </SwayTitle>
       <div className="mt-4 space-y-4">
         {rows.map((a, i) => {
-          const desc =
-            tone === "professional" ? a.description_professional : a.description_conversational;
+          const desc = a.description_professional;
           return (
             <Reveal key={a.id} delay={Math.min(i, 3) * 100}>
               <SectionCard>

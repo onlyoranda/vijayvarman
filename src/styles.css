@@ -111,51 +111,41 @@
 }
 
 @media (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .magnifying-cursor {
+  .circle-cursor {
     position: fixed;
     top: 0;
     left: 0;
     z-index: 100;
-    display: grid;
     width: 2rem;
     height: 2rem;
-    place-items: center;
-    overflow: hidden;
     border: 1px solid color-mix(in oklch, var(--cursor-text) 45%, transparent);
     border-radius: 9999px;
     background: var(--cursor-ink);
-    color: var(--cursor-text);
     box-shadow: 0 4px 16px color-mix(in oklch, var(--foreground) 18%, transparent);
     opacity: 0;
     pointer-events: none;
-    transition: width 180ms ease, height 180ms ease, opacity 220ms ease, background 180ms ease;
-    will-change: transform, width, height;
+    transition: opacity 220ms ease;
+    will-change: transform;
   }
 
-  .magnifying-cursor[data-visible="true"] { opacity: 0.62; }
-  .magnifying-cursor[data-magnifying="true"] {
-    width: 6rem;
-    height: 6rem;
-    opacity: 0.96;
-  }
-  .magnifying-cursor span {
-    max-width: 5.25rem;
-    overflow: hidden;
-    font-family: var(--font-sans);
-    font-size: 1.1rem;
-    font-weight: 700;
-    line-height: 1;
-    text-align: center;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  body.has-magnifying-cursor,
-  body.has-magnifying-cursor a,
-  body.has-magnifying-cursor button,
-  body.has-magnifying-cursor input,
-  body.has-magnifying-cursor textarea,
-  body.has-magnifying-cursor select,
-  body.has-magnifying-cursor label { cursor: none; }
+  .circle-cursor[data-visible="true"] { opacity: 0.62; }
+
+  body.has-circle-cursor,
+  body.has-circle-cursor a,
+  body.has-circle-cursor button,
+  body.has-circle-cursor input,
+  body.has-circle-cursor textarea,
+  body.has-circle-cursor select,
+  body.has-circle-cursor label { cursor: none; }
+}
+
+@keyframes connector-flow {
+  0%, 100% { opacity: 0.55; transform: translateY(-2px); }
+  50% { opacity: 1; transform: translateY(10px); }
+}
+
+@utility animate-connector-flow {
+  animation: connector-flow 2.4s ease-in-out infinite;
 }
 
 /* Gentle one-off sway for section titles as they scroll into view */

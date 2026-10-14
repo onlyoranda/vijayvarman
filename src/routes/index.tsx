@@ -353,9 +353,12 @@ function SectionCard({ children }: { children: ReactNode }) {
   );
 }
 
-function Chip({ children }: { children: ReactNode }) {
+function Chip({ children, delay = 0 }: { children: ReactNode; delay?: number }) {
   return (
-    <span className="inline-flex items-center rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-primary">
+    <span
+      style={{ animationDelay: `${delay}ms` }}
+      className="animate-content-shimmer inline-flex items-center rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-primary"
+    >
       {children}
     </span>
   );
@@ -611,16 +614,20 @@ function SkillsSection({ groups }: { groups: Portfolio["skillGroups"] }) {
         <Reveal>
           <SectionCard>
             <div className="grid gap-6 sm:grid-cols-2">
-              {groups.map((g) => (
+              {groups.map((g, gi) => (
                 <div key={g.id} className="group/skill">
-                  <h3 className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground transition-colors group-hover/skill:text-primary">
+                  <h3
+                    style={{ animationDelay: `${gi * 320}ms` }}
+                    className="animate-content-shimmer text-xs font-extrabold uppercase tracking-wide text-muted-foreground transition-colors group-hover/skill:text-primary"
+                  >
                     {g.name}
                   </h3>
                   <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                    {g.skills.map((s) => (
+                    {g.skills.map((s, si) => (
                       <span
                         key={s.id}
-                        className="inline-flex min-h-8 items-center rounded-full bg-accent-soft px-4 py-1.5 text-sm font-semibold text-primary transition-all duration-300 group-hover/skill:-translate-y-0.5 group-hover/skill:shadow-sm"
+                        style={{ animationDelay: `${(gi * 5 + si) * 160}ms` }}
+                        className="animate-content-shimmer inline-flex min-h-8 items-center rounded-full bg-accent-soft px-4 py-1.5 text-sm font-semibold text-primary transition-all duration-300 group-hover/skill:-translate-y-0.5 group-hover/skill:shadow-sm"
                       >
                         {s.name}
                       </span>
@@ -650,12 +657,23 @@ function ExperienceSection({ rows }: { rows: Portfolio["experience"] }) {
             <Reveal key={job.id} delay={Math.min(i, 3) * 100}>
               <SectionCard>
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <h3 className="text-base font-extrabold text-foreground">{job.job_title}</h3>
-                  <p className="text-xs font-bold text-primary">
+                  <h3
+                    style={{ animationDelay: `${Math.min(i, 3) * 420}ms` }}
+                    className="animate-content-glow text-base font-extrabold text-foreground"
+                  >
+                    {job.job_title}
+                  </h3>
+                  <p
+                    style={{ animationDelay: `${Math.min(i, 3) * 420 + 180}ms` }}
+                    className="animate-content-shimmer text-xs font-bold text-primary"
+                  >
                     {formatRange(job.start_date, job.end_date, job.is_current)}
                   </p>
                 </div>
-                <p className="mt-0.5 text-sm font-semibold text-muted-foreground">
+                <p
+                  style={{ animationDelay: `${Math.min(i, 3) * 420 + 320}ms` }}
+                  className="animate-content-shimmer mt-0.5 text-sm font-semibold text-muted-foreground"
+                >
                   {job.company}
                   {job.country ? ` · ${job.country}` : ""}
                   {job.employment_type ? ` · ${job.employment_type}` : ""}
@@ -670,8 +688,10 @@ function ExperienceSection({ rows }: { rows: Portfolio["experience"] }) {
                 )}
                 {job.skills.length > 0 && (
                   <div className="mt-4 flex flex-wrap gap-1.5">
-                    {job.skills.map((s) => (
-                      <Chip key={s}>{s}</Chip>
+                    {job.skills.map((s, si) => (
+                      <Chip key={s} delay={si * 160}>
+                        {s}
+                      </Chip>
                     ))}
                   </div>
                 )}
@@ -697,12 +717,23 @@ function EducationSection({ rows }: { rows: Portfolio["education"] }) {
             <Reveal key={ed.id} delay={Math.min(i, 3) * 100}>
               <SectionCard>
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <h3 className="text-base font-extrabold text-foreground">{ed.qualification}</h3>
-                  <p className="text-xs font-bold text-primary">
+                  <h3
+                    style={{ animationDelay: `${Math.min(i, 3) * 420}ms` }}
+                    className="animate-content-glow text-base font-extrabold text-foreground"
+                  >
+                    {ed.qualification}
+                  </h3>
+                  <p
+                    style={{ animationDelay: `${Math.min(i, 3) * 420 + 180}ms` }}
+                    className="animate-content-shimmer text-xs font-bold text-primary"
+                  >
                     {formatRange(ed.start_date, ed.end_date)}
                   </p>
                 </div>
-                <p className="mt-0.5 text-sm font-semibold text-muted-foreground">
+                <p
+                  style={{ animationDelay: `${Math.min(i, 3) * 420 + 320}ms` }}
+                  className="animate-content-shimmer mt-0.5 text-sm font-semibold text-muted-foreground"
+                >
                   {ed.institution}
                   {ed.specialisation ? ` · ${ed.specialisation}` : ""}
                 </p>
@@ -729,9 +760,17 @@ function AwardsSection({ rows }: { rows: Portfolio["awards"] }) {
             <Reveal key={a.id} delay={Math.min(i, 3) * 100}>
               <SectionCard>
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <h3 className="text-base font-extrabold text-foreground">{a.title}</h3>
+                  <h3
+                    style={{ animationDelay: `${Math.min(i, 3) * 420}ms` }}
+                    className="animate-content-glow text-base font-extrabold text-foreground"
+                  >
+                    {a.title}
+                  </h3>
                   {a.date_awarded && (
-                    <p className="text-xs font-bold text-primary">
+                    <p
+                      style={{ animationDelay: `${Math.min(i, 3) * 420 + 180}ms` }}
+                      className="animate-content-shimmer text-xs font-bold text-primary"
+                    >
                       {new Date(a.date_awarded).toLocaleDateString("en-GB", {
                         month: "short",
                         year: "numeric",
@@ -740,7 +779,12 @@ function AwardsSection({ rows }: { rows: Portfolio["awards"] }) {
                   )}
                 </div>
                 {a.issuer && (
-                  <p className="mt-0.5 text-sm font-semibold text-muted-foreground">{a.issuer}</p>
+                  <p
+                    style={{ animationDelay: `${Math.min(i, 3) * 420 + 320}ms` }}
+                    className="animate-content-shimmer mt-0.5 text-sm font-semibold text-muted-foreground"
+                  >
+                    {a.issuer}
+                  </p>
                 )}
                 {desc && <p className="mt-3 text-sm leading-relaxed text-foreground/90">{desc}</p>}
                 {a.url && (
@@ -772,15 +816,28 @@ function CertificationsSection({ rows }: { rows: Portfolio["certifications"] }) 
         <Reveal>
           <SectionCard>
             <ul className="divide-y divide-line">
-              {rows.map((c) => (
+              {rows.map((c, ci) => (
                 <li key={c.id} className="flex flex-wrap items-baseline justify-between gap-2 py-3 first:pt-0 last:pb-0">
                   <div>
-                    <p className="text-sm font-extrabold text-foreground">{c.title}</p>
-                    <p className="text-xs font-semibold text-muted-foreground">{c.issuer}</p>
+                    <p
+                      style={{ animationDelay: `${ci * 300}ms` }}
+                      className="animate-content-glow text-sm font-extrabold text-foreground"
+                    >
+                      {c.title}
+                    </p>
+                    <p
+                      style={{ animationDelay: `${ci * 300 + 150}ms` }}
+                      className="animate-content-shimmer text-xs font-semibold text-muted-foreground"
+                    >
+                      {c.issuer}
+                    </p>
                   </div>
                   <div className="flex items-center gap-3">
                     {c.issue_date && (
-                      <p className="text-xs font-bold text-primary">
+                      <p
+                        style={{ animationDelay: `${ci * 300 + 300}ms` }}
+                        className="animate-content-shimmer text-xs font-bold text-primary"
+                      >
                         {new Date(c.issue_date).toLocaleDateString("en-GB", {
                           month: "short",
                           year: "numeric",

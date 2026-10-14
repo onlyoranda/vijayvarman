@@ -19,3 +19,4 @@
 - [x] Add owner-only profile photo upload and public profile display
 - [x] Add a circular fading pointer on precise-pointer devices
 - [x] Restore typewriter, count-up, title, reveal, and connector motion on mobile browsers
+- [x] Avatar halo + unified icon-box shimmer, extended to section content (skill chips, job titles, dates)

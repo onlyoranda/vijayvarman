@@ -353,9 +353,12 @@ function SectionCard({ children }: { children: ReactNode }) {
   );
 }
 
-function Chip({ children }: { children: ReactNode }) {
+function Chip({ children, delay = 0 }: { children: ReactNode; delay?: number }) {
   return (
-    <span className="inline-flex items-center rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-primary">
+    <span
+      style={{ animationDelay: `${delay}ms` }}
+      className="animate-content-shimmer inline-flex items-center rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-primary"
+    >
       {children}
     </span>
   );
@@ -611,16 +614,20 @@ function SkillsSection({ groups }: { groups: Portfolio["skillGroups"] }) {
         <Reveal>
           <SectionCard>
             <div className="grid gap-6 sm:grid-cols-2">
-              {groups.map((g) => (
+              {groups.map((g, gi) => (
                 <div key={g.id} className="group/skill">
-                  <h3 className="text-xs font-extrabold uppercase tracking-wide text-muted-foreground transition-colors group-hover/skill:text-primary">
+                  <h3
+                    style={{ animationDelay: `${gi * 320}ms` }}
+                    className="animate-content-shimmer text-xs font-extrabold uppercase tracking-wide text-muted-foreground transition-colors group-hover/skill:text-primary"
+                  >
                     {g.name}
                   </h3>
                   <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                    {g.skills.map((s) => (
+                    {g.skills.map((s, si) => (
                       <span
                         key={s.id}
-                        className="inline-flex min-h-8 items-center rounded-full bg-accent-soft px-4 py-1.5 text-sm font-semibold text-primary transition-all duration-300 group-hover/skill:-translate-y-0.5 group-hover/skill:shadow-sm"
+                        style={{ animationDelay: `${(gi * 5 + si) * 160}ms` }}
+                        className="animate-content-shimmer inline-flex min-h-8 items-center rounded-full bg-accent-soft px-4 py-1.5 text-sm font-semibold text-primary transition-all duration-300 group-hover/skill:-translate-y-0.5 group-hover/skill:shadow-sm"
                       >
                         {s.name}
                       </span>

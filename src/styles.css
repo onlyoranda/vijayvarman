@@ -251,3 +251,22 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .avatar-halo, .icon-box-pulse, .icon-shimmer { animation: none; }
 }
+
+/* Gentle breathing shimmer for section content: skill chips, job titles and dates */
+@keyframes content-shimmer {
+  0%, 100% { opacity: 0.84; }
+  50% { opacity: 1; }
+}
+@keyframes content-glow {
+  0%, 100% { opacity: 0.9; text-shadow: 0 0 0 transparent; }
+  50% { opacity: 1; text-shadow: 0 0 12px color-mix(in oklch, var(--color-gold) 34%, transparent); }
+}
+@utility animate-content-shimmer {
+  animation: content-shimmer 5.2s ease-in-out infinite;
+}
+@utility animate-content-glow {
+  animation: content-glow 5.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-content-shimmer, .animate-content-glow { animation: none; }
+}

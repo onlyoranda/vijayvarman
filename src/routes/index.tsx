@@ -155,8 +155,8 @@ function SwayTitle({
         swayed ? "animate-title-sway" : ""
       }`}
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-primary">
-        {icon}
+      <span className="icon-box-pulse flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-primary">
+        <span className="icon-shimmer inline-flex">{icon}</span>
       </span>
       <span>{children}</span>
       <span
@@ -450,7 +450,7 @@ function PortfolioView() {
             <div className="absolute right-4 top-4">
               <ThemeToggle />
             </div>
-            <div className="inline-block rounded-full ring-2 ring-gold/60 ring-offset-4 ring-offset-card">
+            <div className="avatar-halo inline-block rounded-full ring-2 ring-gold/60 ring-offset-4 ring-offset-card">
               {p.profile_photo_url ? (
                 <img
                   src={`/api/public/profile-photo?v=${encodeURIComponent(p.profile_photo_url)}`}

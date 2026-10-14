@@ -376,20 +376,12 @@ const REGION_LABEL: Record<Region, string> = { IN: "India", UK: "United Kingdom"
 function useRegion() {
   const [region, setRegion] = useState<Region | null>(null);
   useEffect(() => {
-    const saved = localStorage.getItem("portfolio-region");
-    if (saved === "IN" || saved === "UK") {
-      setRegion(saved);
-      return;
-    }
+    localStorage.removeItem("portfolio-region");
     getVisitorRegion()
       .then(setRegion)
       .catch(() => setRegion("UK"));
   }, []);
-  const choose = (r: Region) => {
-    localStorage.setItem("portfolio-region", r);
-    setRegion(r);
-  };
-  return [region, choose] as const;
+  return region;
 }
 
 function ThemeToggle() {
@@ -419,27 +411,9 @@ function ThemeToggle() {
   );
 }
 
-function RegionToggle({ region, onChange }: { region: Region | null; onChange: (r: Region) => void }) {
-  return (
-    <div role="group" aria-label="Choose region" className="inline-flex rounded-full border border-line bg-muted p-0.5 text-xs font-semibold">
-      {(["UK", "IN"] as const).map((r) => (
-        <button
-          key={r}
-          type="button"
-          aria-pressed={region === r}
-          onClick={() => onChange(r)}
-          className={`rounded-full px-3 py-1 transition-colors ${region === r ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
-        >
-          {r === "UK" ? "UK" : "India"}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 function PortfolioView() {
   const { data: raw } = useQuery({ queryKey: ["portfolio"], queryFn: () => getPortfolio() });
-  const [region, setRegion] = useRegion();
+  const region = useRegion();
   const data = raw && region ? { ...raw, profile: {
             ...raw.profile,
             country: REGION_LABEL[region],
@@ -470,7 +444,6 @@ function PortfolioView() {
   return (
     <div className="min-h-screen bg-background">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-end gap-3 px-4 pt-4 sm:px-6 lg:px-10">
-        <RegionToggle region={region} onChange={setRegion} />
         <ThemeToggle />
       </div>
       <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-6 sm:px-6 sm:py-8 md:grid-cols-[320px_minmax(0,1fr)] md:gap-12 lg:px-10">

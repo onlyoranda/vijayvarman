@@ -101,7 +101,9 @@ Rules:
 - quick_facts: up to 4 short label/value pairs (e.g. "Experience" / "12+ years"). No contact details.
 - Dates use "YYYY-MM-DD" (use the 1st of the month when only month/year is known) or null.
 - skill_groups: 3-6 themed groups with concise skill names.
-- Keep achievements as short bullet strings, max 6 per role.`;
+- Keep achievements as short bullet strings, max 6 per role.
+- Use EXACTLY these keys:
+{"first_name":"","headline":"","country":"","summary_professional":"","quick_facts":[{"label":"","value":""}],"skill_groups":[{"name":"","skills":[""]}],"experience":[{"company":"","job_title":"","country":null,"employment_type":null,"start_date":null,"end_date":null,"is_current":false,"summary_professional":"","achievements_professional":[""],"skills":[""]}],"education":[{"institution":"","qualification":"","specialisation":null,"start_date":null,"end_date":null,"description_professional":null}],"awards":[{"title":"","issuer":null,"date_awarded":null,"description_professional":null}],"certifications":[{"title":"","issuer":"","issue_date":null,"expiry_date":null,"credential_id":null,"verification_url":null}]}`;
 
 function collectText(node: unknown, out: string[]) {
   if (typeof node === "string") return;
@@ -114,6 +116,91 @@ function collectText(node: unknown, out: string[]) {
     if (typeof o["text"] === "string") out.push(o["text"] as string);
     for (const v of Object.values(o)) collectText(v, out);
   }
+}
+
+type Obj = Record<string, unknown>;
+const str = (v: unknown): string | null => {
+  if (typeof v === "string") return v.trim() || null;
+  if (typeof v === "number") return String(v);
+  return null;
+};
+const pick = (o: Obj, keys: string[]) => {
+  for (const k of keys) {
+    const s = str(o[k]);
+    if (s) return s;
+  }
+  return null;
+};
+const arr = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
+const strList = (v: unknown): string[] =>
+  arr(v)
+    .map((x) => (typeof x === "string" ? x.trim() : x && typeof x === "object" ? pick(x as Obj, ["text", "name", "title", "value"]) : null))
+    .filter((x): x is string => !!x);
+const asObj = (x: unknown, key: string): Obj | null => {
+  if (typeof x === "string" && x.trim()) return { [key]: x.trim() };
+  if (x && typeof x === "object" && !Array.isArray(x)) return x as Obj;
+  return null;
+};
+
+/** Repairs common shape variations from the AI so one odd field never fails the whole import. */
+function normalizeParsed(input: unknown) {
+  const o = (input && typeof input === "object" ? input : {}) as Obj;
+  const objs = (key: string, fallbackKey: string) =>
+    arr(o[key]).map((x) => asObj(x, fallbackKey)).filter((x): x is Obj => !!x);
+
+  return {
+    first_name: pick(o, ["first_name", "firstName", "name"])?.split(/\s+/)[0] ?? null,
+    headline: pick(o, ["headline", "title"]),
+    country: pick(o, ["country"]),
+    summary_professional: pick(o, ["summary_professional", "summary", "profile"]),
+    quick_facts: objs("quick_facts", "value")
+      .map((f) => ({ label: pick(f, ["label", "name", "key"]) ?? "", value: pick(f, ["value", "text"]) ?? "" }))
+      .filter((f) => f.label && f.value),
+    skill_groups: objs("skill_groups", "name")
+      .map((g) => ({ name: pick(g, ["name", "group", "title", "category"]) ?? "Skills", skills: strList(g["skills"] ?? g["items"]) }))
+      .filter((g) => g.skills.length > 0),
+    experience: objs("experience", "job_title")
+      .map((e) => ({
+        company: pick(e, ["company", "employer", "organisation", "organization"]) ?? "",
+        job_title: pick(e, ["job_title", "role", "position", "title"]) ?? "Professional Role",
+        country: pick(e, ["country"]),
+        employment_type: pick(e, ["employment_type", "type"]),
+        start_date: pick(e, ["start_date", "start"]),
+        end_date: pick(e, ["end_date", "end"]),
+        is_current: e["is_current"] === true,
+        summary_professional: pick(e, ["summary_professional", "summary", "description"]),
+        achievements_professional: strList(e["achievements_professional"] ?? e["achievements"]).slice(0, 6),
+        skills: strList(e["skills"]),
+      }))
+      .filter((e) => e.company || e.job_title !== "Professional Role"),
+    education: objs("education", "qualification")
+      .map((e) => ({
+        institution: pick(e, ["institution", "school", "university", "college"]) ?? "Independent / Professional Study",
+        qualification: pick(e, ["qualification", "degree", "program", "programme", "course", "title"]) ?? "Qualification",
+        specialisation: pick(e, ["specialisation", "specialization", "field", "major"]),
+        start_date: pick(e, ["start_date", "start"]),
+        end_date: pick(e, ["end_date", "end"]),
+        description_professional: pick(e, ["description_professional", "description"]),
+      })),
+    awards: objs("awards", "title")
+      .map((a) => ({
+        title: pick(a, ["title", "name", "award"]),
+        issuer: pick(a, ["issuer", "organisation", "organization", "by"]),
+        date_awarded: pick(a, ["date_awarded", "date", "year"]),
+        description_professional: pick(a, ["description_professional", "description"]),
+      }))
+      .filter((a): a is typeof a & { title: string } => !!a.title),
+    certifications: objs("certifications", "title")
+      .map((c) => ({
+        title: pick(c, ["title", "name", "certification", "certificate"]),
+        issuer: pick(c, ["issuer", "organisation", "organization", "provider", "by"]) ?? "",
+        issue_date: pick(c, ["issue_date", "date", "year"]),
+        expiry_date: pick(c, ["expiry_date"]),
+        credential_id: pick(c, ["credential_id"]),
+        verification_url: pick(c, ["verification_url", "url"]),
+      }))
+      .filter((c): c is typeof c & { title: string } => !!c.title),
+  };
 }
 
 function extractJson(raw: string) {
@@ -162,7 +249,18 @@ export const importResumeContent = createServerFn({ method: "POST" })
       collectText(json["output"], parts);
       raw = parts.join("\n");
     }
-    const parsed = parsedSchema.parse(extractJson(raw));
+    let extracted: unknown;
+    try {
+      extracted = extractJson(raw);
+    } catch {
+      throw new Error("The résumé could not be read clearly. Please try uploading it again.");
+    }
+    const result = parsedSchema.safeParse(normalizeParsed(extracted));
+    if (!result.success) {
+      console.error("Resume import validation", result.error.issues.slice(0, 10));
+      throw new Error("Some résumé details were in an unexpected format. Please try again.");
+    }
+    const parsed = result.data;
 
     const profileId = data.profileId;
     const profileUpdate: Record<string, unknown> = {};

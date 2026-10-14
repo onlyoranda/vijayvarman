@@ -1,0 +1,14 @@
+DROP POLICY IF EXISTS "Public read" ON public.education;
+CREATE POLICY "Public read" ON public.education FOR SELECT TO anon, authenticated USING (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = education.profile_id));
+DROP POLICY IF EXISTS "Public read" ON public.awards;
+CREATE POLICY "Public read" ON public.awards FOR SELECT TO anon, authenticated USING (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = awards.profile_id));
+DROP POLICY IF EXISTS "Public read" ON public.certifications;
+CREATE POLICY "Public read" ON public.certifications FOR SELECT TO anon, authenticated USING (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = certifications.profile_id));
+DROP POLICY IF EXISTS "Public read" ON public.experience;
+CREATE POLICY "Public read" ON public.experience FOR SELECT TO anon, authenticated USING (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = experience.profile_id));
+DROP POLICY IF EXISTS "Public read" ON public.skill_groups;
+CREATE POLICY "Public read" ON public.skill_groups FOR SELECT TO anon, authenticated USING (EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = skill_groups.profile_id));
+DROP POLICY IF EXISTS "Public read" ON public.skills;
+CREATE POLICY "Public read" ON public.skills FOR SELECT TO anon, authenticated USING (EXISTS (SELECT 1 FROM public.skill_groups g WHERE g.id = skills.skill_group_id));
+DROP POLICY IF EXISTS "Anyone can read the profile" ON public.profiles;
+CREATE POLICY "Anyone can read the profile" ON public.profiles FOR SELECT TO anon, authenticated USING (first_name IS NOT NULL AND length(trim(first_name)) > 0);

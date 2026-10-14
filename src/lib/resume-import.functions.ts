@@ -131,6 +131,14 @@ const pick = (o: Obj, keys: string[]) => {
   }
   return null;
 };
+const dt = (v: string | null): string | null => {
+  if (!v) return null;
+  const m = v.match(/(\d{4})(?:-(\d{1,2}))?(?:-(\d{1,2}))?/);
+  if (!m) return null;
+  const mm = String(Math.min(12, Math.max(1, Number(m[2] ?? 1)))).padStart(2, "0");
+  const dd = String(Math.min(28, Math.max(1, Number(m[3] ?? 1)))).padStart(2, "0");
+  return `${m[1]}-${mm}-${dd}`;
+};
 const arr = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
 const strList = (v: unknown): string[] =>
   arr(v)
@@ -165,8 +173,8 @@ function normalizeParsed(input: unknown) {
         job_title: pick(e, ["job_title", "role", "position", "title"]) ?? "Professional Role",
         country: pick(e, ["country"]),
         employment_type: pick(e, ["employment_type", "type"]),
-        start_date: pick(e, ["start_date", "start"]),
-        end_date: pick(e, ["end_date", "end"]),
+        start_date: dt(pick(e, ["start_date", "start"])),
+        end_date: dt(pick(e, ["end_date", "end"])),
         is_current: e["is_current"] === true,
         summary_professional: pick(e, ["summary_professional", "summary", "description"]),
         achievements_professional: strList(e["achievements_professional"] ?? e["achievements"]).slice(0, 6),
@@ -178,15 +186,15 @@ function normalizeParsed(input: unknown) {
         institution: pick(e, ["institution", "school", "university", "college"]) ?? "Independent / Professional Study",
         qualification: pick(e, ["qualification", "degree", "program", "programme", "course", "title"]) ?? "Qualification",
         specialisation: pick(e, ["specialisation", "specialization", "field", "major"]),
-        start_date: pick(e, ["start_date", "start"]),
-        end_date: pick(e, ["end_date", "end"]),
+        start_date: dt(pick(e, ["start_date", "start"])),
+        end_date: dt(pick(e, ["end_date", "end"])),
         description_professional: pick(e, ["description_professional", "description"]),
       })),
     awards: objs("awards", "title")
       .map((a) => ({
         title: pick(a, ["title", "name", "award"]),
         issuer: pick(a, ["issuer", "organisation", "organization", "by"]),
-        date_awarded: pick(a, ["date_awarded", "date", "year"]),
+        date_awarded: dt(pick(a, ["date_awarded", "date", "year"])),
         description_professional: pick(a, ["description_professional", "description"]),
       }))
       .filter((a): a is typeof a & { title: string } => !!a.title),
@@ -194,8 +202,8 @@ function normalizeParsed(input: unknown) {
       .map((c) => ({
         title: pick(c, ["title", "name", "certification", "certificate"]),
         issuer: pick(c, ["issuer", "organisation", "organization", "provider", "by"]) ?? "",
-        issue_date: pick(c, ["issue_date", "date", "year"]),
-        expiry_date: pick(c, ["expiry_date"]),
+        issue_date: dt(pick(c, ["issue_date", "date", "year"])),
+        expiry_date: dt(pick(c, ["expiry_date"])),
         credential_id: pick(c, ["credential_id"]),
         verification_url: pick(c, ["verification_url", "url"]),
       }))

@@ -99,6 +99,38 @@
   --cursor-text: oklch(0.99 0.003 265);
 }
 
+/* Executive Midnight: dark navy + warm gold */
+.dark {
+  color-scheme: dark;
+  --background: oklch(0.185 0.025 252); /* deep midnight navy */
+  --gold: oklch(0.76 0.09 78); /* luminous brushed gold */
+  --gold-soft: oklch(0.3 0.04 75);
+  --foreground: oklch(0.955 0.008 250); /* ivory */
+  --card: oklch(0.235 0.03 252);
+  --card-foreground: oklch(0.955 0.008 250);
+  --popover: oklch(0.235 0.03 252);
+  --popover-foreground: oklch(0.955 0.008 250);
+  --primary: oklch(0.8 0.085 78); /* gold leads in dark */
+  --primary-foreground: oklch(0.2 0.03 252);
+  --secondary: oklch(0.3 0.04 252);
+  --secondary-foreground: oklch(0.955 0.008 250);
+  --muted: oklch(0.27 0.03 252);
+  --muted-foreground: oklch(0.72 0.02 250);
+  --accent: oklch(0.8 0.085 78);
+  --accent-foreground: oklch(0.2 0.03 252);
+  --accent-soft: oklch(0.28 0.035 252);
+  --line: oklch(0.32 0.035 252);
+  --border: oklch(0.32 0.035 252);
+  --input: oklch(0.32 0.035 252);
+  --ring: oklch(0.8 0.085 78);
+  --cursor-ink: oklch(0.95 0.01 80 / 0.55);
+  --cursor-text: oklch(0.2 0.03 252);
+}
+
+body {
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
 @layer base {
   * {
     border-color: var(--color-border);

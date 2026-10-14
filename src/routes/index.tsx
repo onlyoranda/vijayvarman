@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Briefcase, GraduationCap, Linkedin, Lock, MapPin, Medal, Sparkles, User, Wrench } from "lucide-react";
+import { Briefcase, GraduationCap, Linkedin, Lock, MapPin, Medal, Moon, Sparkles, Sun, User, Wrench } from "lucide-react";
 import { getPortfolio, type Portfolio } from "@/lib/portfolio.functions";
+import { getVisitorRegion, type Region } from "@/lib/region.functions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -370,8 +371,83 @@ function formatRange(start: string | null, end: string | null, current?: boolean
 }
 
 /* ---------- main view ---------- */
+const REGION_LABEL: Record<Region, string> = { IN: "India", UK: "United Kingdom" };
+
+function useRegion() {
+  const [region, setRegion] = useState<Region | null>(null);
+  useEffect(() => {
+    const saved = localStorage.getItem("portfolio-region");
+    if (saved === "IN" || saved === "UK") {
+      setRegion(saved);
+      return;
+    }
+    getVisitorRegion()
+      .then(setRegion)
+      .catch(() => setRegion("UK"));
+  }, []);
+  const choose = (r: Region) => {
+    localStorage.setItem("portfolio-region", r);
+    setRegion(r);
+  };
+  return [region, choose] as const;
+}
+
+function ThemeToggle() {
+  const [dark, setDark] = useState(false);
+  useEffect(() => setDark(document.documentElement.classList.contains("dark")), []);
+  const toggle = () => {
+    const next = !dark;
+    document.documentElement.classList.toggle("dark", next);
+    localStorage.setItem("portfolio-theme", next ? "dark" : "light");
+    setDark(next);
+  };
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      role="switch"
+      aria-checked={dark}
+      aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
+      className="relative inline-flex h-8 w-14 items-center rounded-full border border-line bg-muted p-1 transition-colors hover:border-gold/60"
+    >
+      <span
+        className={`flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-transform duration-300 ${dark ? "translate-x-6" : "translate-x-0"}`}
+      >
+        {dark ? <Moon className="h-3.5 w-3.5" aria-hidden="true" /> : <Sun className="h-3.5 w-3.5" aria-hidden="true" />}
+      </span>
+    </button>
+  );
+}
+
+function RegionToggle({ region, onChange }: { region: Region | null; onChange: (r: Region) => void }) {
+  return (
+    <div role="group" aria-label="Choose region" className="inline-flex rounded-full border border-line bg-muted p-0.5 text-xs font-semibold">
+      {(["UK", "IN"] as const).map((r) => (
+        <button
+          key={r}
+          type="button"
+          aria-pressed={region === r}
+          onClick={() => onChange(r)}
+          className={`rounded-full px-3 py-1 transition-colors ${region === r ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+        >
+          {r === "UK" ? "UK" : "India"}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function PortfolioView() {
-  const { data } = useQuery({ queryKey: ["portfolio"], queryFn: () => getPortfolio() });
+  const { data: raw } = useQuery({ queryKey: ["portfolio"], queryFn: () => getPortfolio() });
+  const [region, setRegion] = useRegion();
+  const data = raw && region ? { ...raw, profile: {
+            ...raw.profile,
+            country: REGION_LABEL[region],
+            quick_facts: raw.profile.quick_facts.map((f) =>
+              /^(base|location|country)$/i.test(f.label) ? { ...f, value: region === "IN" ? "India" : "UK" } : f,
+            ),
+          },
+        } : raw;
   if (!data) {
     return (
       <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">
@@ -393,7 +469,11 @@ function PortfolioView() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-8 sm:px-6 sm:py-12 md:grid-cols-[320px_minmax(0,1fr)] md:gap-12 lg:px-10">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-end gap-3 px-4 pt-4 sm:px-6 lg:px-10">
+        <RegionToggle region={region} onChange={setRegion} />
+        <ThemeToggle />
+      </div>
+      <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-6 sm:px-6 sm:py-8 md:grid-cols-[320px_minmax(0,1fr)] md:gap-12 lg:px-10">
         {/* ------- sticky editorial rail ------- */}
         <aside className="md:sticky md:top-10 md:self-start">
           <div className="rounded-2xl border border-line bg-card p-6 shadow-sm">

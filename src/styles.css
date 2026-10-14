@@ -102,29 +102,29 @@
 /* Executive Midnight: dark navy + warm gold */
 .dark {
   color-scheme: dark;
-  --background: oklch(0.185 0.025 252); /* deep midnight navy */
-  --gold: oklch(0.76 0.09 78); /* luminous brushed gold */
-  --gold-soft: oklch(0.3 0.04 75);
-  --foreground: oklch(0.955 0.008 250); /* ivory */
-  --card: oklch(0.235 0.03 252);
-  --card-foreground: oklch(0.955 0.008 250);
-  --popover: oklch(0.235 0.03 252);
-  --popover-foreground: oklch(0.955 0.008 250);
-  --primary: oklch(0.8 0.085 78); /* gold leads in dark */
-  --primary-foreground: oklch(0.2 0.03 252);
-  --secondary: oklch(0.3 0.04 252);
-  --secondary-foreground: oklch(0.955 0.008 250);
-  --muted: oklch(0.27 0.03 252);
-  --muted-foreground: oklch(0.72 0.02 250);
-  --accent: oklch(0.8 0.085 78);
-  --accent-foreground: oklch(0.2 0.03 252);
-  --accent-soft: oklch(0.28 0.035 252);
-  --line: oklch(0.32 0.035 252);
-  --border: oklch(0.32 0.035 252);
-  --input: oklch(0.32 0.035 252);
-  --ring: oklch(0.8 0.085 78);
-  --cursor-ink: oklch(0.95 0.01 80 / 0.55);
-  --cursor-text: oklch(0.2 0.03 252);
+  --background: oklch(0.29 0.012 255); /* evening slate */
+  --gold: oklch(0.72 0.07 78); /* antique champagne */
+  --gold-soft: oklch(0.36 0.03 75);
+  --foreground: oklch(0.86 0.01 80);
+  --card: oklch(0.34 0.013 255);
+  --card-foreground: oklch(0.86 0.01 80);
+  --popover: oklch(0.34 0.013 255);
+  --popover-foreground: oklch(0.86 0.01 80);
+  --primary: oklch(0.74 0.07 78);
+  --primary-foreground: oklch(0.25 0.012 255);
+  --secondary: oklch(0.38 0.014 255);
+  --secondary-foreground: oklch(0.86 0.01 80);
+  --muted: oklch(0.36 0.013 255);
+  --muted-foreground: oklch(0.68 0.012 250);
+  --accent: oklch(0.74 0.07 78);
+  --accent-foreground: oklch(0.25 0.012 255);
+  --accent-soft: oklch(0.37 0.02 255);
+  --line: oklch(0.4 0.014 255);
+  --border: oklch(0.4 0.014 255);
+  --input: oklch(0.4 0.014 255);
+  --ring: oklch(0.74 0.07 78);
+  --cursor-ink: oklch(0.88 0.01 80 / 0.5);
+  --cursor-text: oklch(0.25 0.012 255);
 }
 
 body {

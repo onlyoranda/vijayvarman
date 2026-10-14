@@ -83,17 +83,62 @@ export const updateProfile = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-const sectionSchema = z.object({
-  profileId: z.string().uuid(),
-  rows: z.array(z.record(z.string(), z.unknown())),
-});
+const str = (max: number) => z.string().max(max).nullable().optional();
+const dateStr = z.string().max(10).nullable().optional().or(z.literal("")).transform((v) => v || null);
+const strList = z.array(z.string().max(500)).max(40).optional().default([]);
 
-function makeSectionSaver(
-  table: "experience" | "education" | "awards" | "certifications" | "skill_groups",
-) {
+// Explicit per-table field allowlists: unknown keys are stripped, and
+// server-controlled fields (id, profile_id, sort_order) are never accepted.
+const rowSchemas = {
+  experience: z.object({
+    company: z.string().min(1).max(200),
+    job_title: z.string().min(1).max(200),
+    country: str(80),
+    employment_type: str(80),
+    start_date: dateStr,
+    end_date: dateStr,
+    is_current: z.boolean().optional().default(false),
+    summary_professional: str(4000),
+    summary_conversational: str(4000),
+    achievements_professional: strList,
+    achievements_conversational: strList,
+    skills: strList,
+  }),
+  education: z.object({
+    institution: z.string().min(1).max(200),
+    qualification: z.string().min(1).max(200),
+    specialisation: str(200),
+    start_date: dateStr,
+    end_date: dateStr,
+    description_professional: str(4000),
+    description_conversational: str(4000),
+  }),
+  awards: z.object({
+    title: z.string().min(1).max(200),
+    issuer: str(200),
+    date_awarded: dateStr,
+    description_professional: str(4000),
+    description_conversational: str(4000),
+    url: str(500),
+  }),
+  certifications: z.object({
+    title: z.string().min(1).max(200),
+    issuer: z.string().min(1).max(200),
+    issue_date: dateStr,
+    expiry_date: dateStr,
+    credential_id: str(200),
+    verification_url: str(500),
+  }),
+} as const;
+
+function makeSectionSaver(table: keyof typeof rowSchemas) {
+  const schema = z.object({
+    profileId: z.string().uuid(),
+    rows: z.array(rowSchemas[table]).max(100),
+  });
   return createServerFn({ method: "POST" })
     .middleware([requireSupabaseAuth])
-    .inputValidator((data) => sectionSchema.parse(data))
+    .inputValidator((data) => schema.parse(data))
     .handler(async ({ data, context }) => {
       const ctx = context as AdminContext;
       await requireAdmin(ctx);
@@ -103,7 +148,7 @@ function makeSectionSaver(
         .eq("profile_id", data.profileId);
       if (delError) throw new Error(delError.message);
       if (data.rows.length > 0) {
-        const rows = data.rows.map((row, i) => ({
+        const rows = data.rows.map((row: Record<string, unknown>, i: number) => ({
           ...row,
           profile_id: data.profileId,
           sort_order: i,

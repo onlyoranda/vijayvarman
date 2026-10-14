@@ -15,7 +15,6 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as ApiPublicProfilePhotoRouteImport } from './routes/api/public/profile-photo'
-import { Route as ApiPublicResumeRouteImport } from './routes/api/public/resume'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -46,11 +45,6 @@ const ApiPublicProfilePhotoRoute = ApiPublicProfilePhotoRouteImport.update({
   path: '/api/public/profile-photo',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicResumeRoute = ApiPublicResumeRouteImport.update({
-  id: '/api/public/resume',
-  path: '/api/public/resume',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -58,7 +52,6 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/api/public/profile-photo': typeof ApiPublicProfilePhotoRoute
-  '/api/public/resume': typeof ApiPublicResumeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -66,7 +59,6 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/api/public/profile-photo': typeof ApiPublicProfilePhotoRoute
-  '/api/public/resume': typeof ApiPublicResumeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -76,25 +68,14 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/api/public/profile-photo': typeof ApiPublicProfilePhotoRoute
-  '/api/public/resume': typeof ApiPublicResumeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
-    | '/login'
-    | '/reset-password'
-    | '/admin'
-    | '/api/public/profile-photo'
-    | '/api/public/resume'
+    '/' | '/login' | '/reset-password' | '/admin' | '/api/public/profile-photo'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
-    | '/login'
-    | '/reset-password'
-    | '/admin'
-    | '/api/public/profile-photo'
-    | '/api/public/resume'
+    '/' | '/login' | '/reset-password' | '/admin' | '/api/public/profile-photo'
   id:
     | '__root__'
     | '/'
@@ -103,7 +84,6 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/admin'
     | '/api/public/profile-photo'
-    | '/api/public/resume'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -112,7 +92,6 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiPublicProfilePhotoRoute: typeof ApiPublicProfilePhotoRoute
-  ApiPublicResumeRoute: typeof ApiPublicResumeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -159,13 +138,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicProfilePhotoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/resume': {
-      id: '/api/public/resume'
-      path: '/api/public/resume'
-      fullPath: '/api/public/resume'
-      preLoaderRoute: typeof ApiPublicResumeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -186,7 +158,6 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ApiPublicProfilePhotoRoute: ApiPublicProfilePhotoRoute,
-  ApiPublicResumeRoute: ApiPublicResumeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

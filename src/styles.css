@@ -234,8 +234,8 @@ body {
 
 /* Breathing gold halo around the profile photo + unified icon-box loop */
 @keyframes avatar-halo {
-  0%, 100% { box-shadow: 0 0 0 4px var(--color-card), 0 0 10px 4px color-mix(in oklch, var(--color-gold) 18%, transparent); }
-  50% { box-shadow: 0 0 0 4px var(--color-card), 0 0 26px 9px color-mix(in oklch, var(--color-gold) 42%, transparent); }
+  0%, 100% { filter: drop-shadow(0 0 4px color-mix(in oklch, var(--color-gold) 25%, transparent)); }
+  50% { filter: drop-shadow(0 0 14px color-mix(in oklch, var(--color-gold) 60%, transparent)); }
 }
 @keyframes icon-box-pulse {
   0%, 100% { box-shadow: 0 0 0 1px color-mix(in oklch, var(--color-gold) 15%, transparent); }

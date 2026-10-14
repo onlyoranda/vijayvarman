@@ -411,7 +411,7 @@ function ThemeToggle() {
       className="relative inline-flex h-8 w-14 items-center rounded-full border border-line bg-muted p-1 transition-colors hover:border-gold/60"
     >
       <span
-        className={`flex h-6 w-6 items-center justify-center rounded-full bg-card text-gold shadow-sm transition-transform duration-300 ${dark ? "translate-x-6" : "translate-x-0"}`}
+        className={`flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-transform duration-300 ${dark ? "translate-x-6" : "translate-x-0"}`}
       >
         {dark ? <Moon className="h-3.5 w-3.5" aria-hidden="true" /> : <Sun className="h-3.5 w-3.5" aria-hidden="true" />}
       </span>
@@ -428,7 +428,7 @@ function RegionToggle({ region, onChange }: { region: Region | null; onChange: (
           type="button"
           aria-pressed={region === r}
           onClick={() => onChange(r)}
-          className={`rounded-full px-3 py-1 transition-colors ${region === r ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+          className={`rounded-full px-3 py-1 transition-colors ${region === r ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
         >
           {r === "UK" ? "UK" : "India"}
         </button>
@@ -440,7 +440,14 @@ function RegionToggle({ region, onChange }: { region: Region | null; onChange: (
 function PortfolioView() {
   const { data: raw } = useQuery({ queryKey: ["portfolio"], queryFn: () => getPortfolio() });
   const [region, setRegion] = useRegion();
-  const data = raw && region ? { ...raw, profile: { ...raw.profile, country: REGION_LABEL[region] } } : raw;
+  const data = raw && region ? { ...raw, profile: {
+            ...raw.profile,
+            country: REGION_LABEL[region],
+            quick_facts: raw.profile.quick_facts.map((f) =>
+              /^(base|location|country)$/i.test(f.label) ? { ...f, value: region === "IN" ? "India" : "UK" } : f,
+            ),
+          },
+        } : raw;
   if (!data) {
     return (
       <div className="flex min-h-screen items-center justify-center text-sm text-muted-foreground">

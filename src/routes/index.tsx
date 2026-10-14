@@ -443,13 +443,13 @@ function PortfolioView() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-end gap-3 px-4 pt-4 sm:px-6 lg:px-10">
-        <ThemeToggle />
-      </div>
       <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-6 sm:px-6 sm:py-8 md:grid-cols-[320px_minmax(0,1fr)] md:gap-12 lg:px-10">
         {/* ------- sticky editorial rail ------- */}
         <aside className="md:sticky md:top-10 md:self-start">
-          <div className="rounded-2xl border border-line bg-card p-6 shadow-sm">
+          <div className="relative rounded-2xl border border-line bg-card p-6 shadow-sm">
+            <div className="absolute right-4 top-4">
+              <ThemeToggle />
+            </div>
             <div className="inline-block rounded-full ring-2 ring-gold/60 ring-offset-4 ring-offset-card">
               {p.profile_photo_url ? (
                 <img
